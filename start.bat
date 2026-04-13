@@ -40,6 +40,9 @@ echo 1. Open a terminal and run: cd backend && npm run dev
 echo 2. Open another terminal and run: cd frontend && npm run dev
 echo 3. Open your browser and visit: http://localhost:4080
 echo.
+echo Or use one-click start (recommended):
+echo cd .. && npm run dev
+echo.
 echo Default login credentials:
 echo Username: admin
 echo Password: admin123

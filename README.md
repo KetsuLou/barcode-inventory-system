@@ -35,22 +35,40 @@
 ### 前置要求
 - Node.js >= 16
 - npm 或 yarn
+- Docker 20.10+ (可选，用于Docker部署)
 
 ### 安装依赖
 
 ```bash
-# 安装后端依赖
+# 方式一：使用npm脚本（推荐）
+npm run install:all
+
+# 方式二：手动安装
 cd backend
 npm install
 
-# 安装前端依赖
 cd ../frontend
 npm install
 ```
 
 ### 运行项目
 
-#### 方式一：一键启动（推荐）
+#### 方式一：Docker 部署（推荐用于生产环境）
+
+```bash
+# 构建并启动
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+详细部署说明请查看 [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
+
+#### 方式二：本地开发（推荐用于开发环境）
 
 ```bash
 # 在项目根目录执行
@@ -58,6 +76,11 @@ npm install
 npm run init-db
 npm run dev
 ```
+
+**说明：**
+- `npm run dev` 会自动检查并清理端口4080和4081的占用进程
+- 然后同时启动前后端开发服务器
+- 如需单独清理端口，可运行 `npm run kill-port`
 
 #### 方式二：分别启动
 
@@ -70,6 +93,23 @@ npm run dev
 cd frontend
 npm run dev
 ```
+
+#### 其他命令
+
+```bash
+# 单独清理端口占用
+npm run kill-port
+
+# 生产环境启动
+npm run build
+npm run start
+```
+
+### 端口说明
+
+- **前端端口**: 4080
+- **后端端口**: 4081
+- 系统会自动检测并清理端口占用，无需手动处理
 
 访问 http://localhost:4080 开始使用
 
@@ -124,6 +164,14 @@ barcode-inventory-system/
 ## 📄 许可证
 
 MIT License
+
+## 📚 文档
+
+- [快速开始指南](QUICK_START.md) - 5分钟快速上手
+- [Docker 部署指南](DOCKER_DEPLOYMENT.md) - Docker 部署详细说明
+- [端口清理说明](PORT_CLEANUP.md) - 端口清理功能说明
+- [命令参考手册](COMMANDS.md) - 所有可用命令
+- [更新日志](CHANGELOG.md) - 版本更新记录
 
 ## 🤝 贡献
 
