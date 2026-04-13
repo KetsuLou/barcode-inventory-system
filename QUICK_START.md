@@ -106,5 +106,8 @@ npm run install:all
 ## 获取帮助
 
 - 查看详细文档：README.md
+- Docker部署：DOCKER_DEPLOYMENT.md
+- 宝塔面板部署：BAOTA_DEPLOYMENT.md
 - 端口清理说明：PORT_CLEANUP.md
+- 命令参考：COMMANDS.md
 - 更新日志：CHANGELOG.md

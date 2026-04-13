@@ -175,6 +175,7 @@ MIT License
 
 - [快速开始指南](QUICK_START.md) - 5分钟快速上手
 - [Docker 部署指南](DOCKER_DEPLOYMENT.md) - Docker 部署详细说明
+- [宝塔面板部署指南](BAOTA_DEPLOYMENT.md) - 宝塔面板部署详细说明
 - [端口清理说明](PORT_CLEANUP.md) - 端口清理功能说明
 - [命令参考手册](COMMANDS.md) - 所有可用命令
 - [更新日志](CHANGELOG.md) - 版本更新记录

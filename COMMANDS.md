@@ -249,6 +249,7 @@ docker-compose exec backend wget -qO- http://localhost:4081/api/health
 - README.md - 项目说明
 - QUICK_START.md - 快速开始
 - DOCKER_DEPLOYMENT.md - Docker 部署
+- BAOTA_DEPLOYMENT.md - 宝塔面板部署
 - PORT_CLEANUP.md - 端口清理
 - CHANGELOG.md - 更新日志
 - COMMANDS.md - 命令参考（本文件）
