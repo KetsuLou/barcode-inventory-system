@@ -10,6 +10,6 @@ RUN npm run build
 
 RUN npm run init-db || true
 
-EXPOSE 3001
+EXPOSE 4081
 
 CMD ["npm", "start"]

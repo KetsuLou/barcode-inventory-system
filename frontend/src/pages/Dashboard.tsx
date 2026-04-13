@@ -14,6 +14,7 @@ const Dashboard: React.FC = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [scannedBarcode, setScannedBarcode] = useState<string>('');
 
   const handleLogout = () => {
     logout();
@@ -22,6 +23,7 @@ const Dashboard: React.FC = () => {
 
   const handleAddProduct = () => {
     setEditingProduct(undefined);
+    setScannedBarcode('');
     setShowForm(true);
   };
 
@@ -39,19 +41,14 @@ const Dashboard: React.FC = () => {
   const handleFormCancel = () => {
     setShowForm(false);
     setEditingProduct(undefined);
+    setScannedBarcode('');
   };
 
   const handleScan = useCallback((barcode: string) => {
     setShowScanner(false);
     setEditingProduct(undefined);
+    setScannedBarcode(barcode);
     setShowForm(true);
-    setTimeout(() => {
-      const barcodeInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-      if (barcodeInput) {
-        barcodeInput.value = barcode;
-        barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    }, 100);
   }, []);
 
   if (!isAuthenticated) {
@@ -103,6 +100,7 @@ const Dashboard: React.FC = () => {
           <div className="mb-6">
             <ProductForm
               product={editingProduct}
+              initialBarcode={scannedBarcode}
               onSuccess={handleFormSuccess}
               onCancel={handleFormCancel}
             />

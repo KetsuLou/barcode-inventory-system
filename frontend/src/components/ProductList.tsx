@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { productAPI } from '../services/api';
-import { Edit, Trash2, Search } from 'lucide-react';
+import { Edit, Trash2, Search, X } from 'lucide-react';
 
 interface ProductListProps {
   onEdit: (product: Product) => void;
@@ -12,6 +12,7 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -41,6 +42,14 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
       console.error('Failed to delete product:', error);
       alert('删除失败');
     }
+  };
+
+  const handleImagePreview = (imageUrl: string) => {
+    setPreviewImage(`http://localhost:4081${imageUrl}`);
+  };
+
+  const closeImagePreview = () => {
+    setPreviewImage(null);
   };
 
   const filteredProducts = products.filter(
@@ -75,6 +84,7 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">图片</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">条形码</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">商品名称</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">单价</th>
@@ -86,6 +96,20 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
             <tbody>
               {filteredProducts.map((product) => (
                 <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-3 px-4">
+                    {product.image_url ? (
+                      <img
+                        src={`http://localhost:4081${product.image_url}`}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded cursor-pointer hover:opacity-80"
+                        onClick={() => handleImagePreview(product.image_url!)}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                        无图片
+                      </div>
+                    )}
+                  </td>
                   <td className="py-3 px-4 font-mono text-sm">{product.barcode}</td>
                   <td className="py-3 px-4 font-medium">{product.name}</td>
                   <td className="py-3 px-4">¥{product.price.toFixed(2)}</td>
@@ -115,6 +139,24 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeImagePreview}>
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <button
+              onClick={closeImagePreview}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300"
+            >
+              <X size={32} />
+            </button>
+            <img
+              src={previewImage}
+              alt="预览"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+          </div>
         </div>
       )}
     </div>

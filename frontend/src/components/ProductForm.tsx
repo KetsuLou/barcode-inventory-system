@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Product, CreateProductDto, UpdateProductDto } from '../types';
-import { productAPI } from '../services/api';
+import { productAPI, uploadAPI } from '../services/api';
+import { Upload, X } from 'lucide-react';
 
 interface ProductFormProps {
   product?: Product;
+  initialBarcode?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, onSuccess, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState<CreateProductDto>({
-    barcode: '',
+    barcode: initialBarcode || '',
     name: '',
     price: 0,
     description: '',
     quantity: 0,
+    image_url: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>('');
 
   useEffect(() => {
     if (product) {
@@ -27,9 +32,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSuccess, onCancel 
         price: product.price,
         description: product.description || '',
         quantity: product.quantity,
+        image_url: product.image_url || '',
       });
+      setPreviewImage(product.image_url || '');
+    } else if (initialBarcode) {
+      setFormData(prev => ({ ...prev, barcode: initialBarcode }));
     }
-  }, [product]);
+  }, [product, initialBarcode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +57,30 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSuccess, onCancel 
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await uploadAPI.uploadImage(file);
+      const imageUrl = response.data.imageUrl;
+      setFormData({ ...formData, image_url: imageUrl });
+      setPreviewImage(imageUrl);
+    } catch (err: any) {
+      setError(err.response?.data?.error || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, image_url: '' });
+    setPreviewImage('');
   };
 
   return (
@@ -128,6 +161,48 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSuccess, onCancel 
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            商品图片
+          </label>
+          {previewImage ? (
+            <div className="relative inline-block">
+              <img
+                src={`http://localhost:4081${previewImage}`}
+                alt="商品预览"
+                className="w-32 h-32 object-cover rounded-md border border-gray-300"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+              <input
+                type="file"
+                id="image-upload"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={uploading}
+              />
+              <label
+                htmlFor="image-upload"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                <Upload size={32} className="text-gray-400 mb-2" />
+                <span className="text-sm text-gray-600">
+                  {uploading ? '上传中...' : '点击上传图片'}
+                </span>
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 pt-4">

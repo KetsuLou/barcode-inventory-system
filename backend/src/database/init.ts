@@ -26,6 +26,7 @@ db.exec(`
     price REAL NOT NULL,
     description TEXT,
     quantity INTEGER DEFAULT 0,
+    image_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );

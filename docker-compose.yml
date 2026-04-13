@@ -6,9 +6,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "3001:3001"
+      - "4081:4081"
     environment:
       - NODE_ENV=production
+      - PORT=4081
       - JWT_SECRET=your-secret-key-change-in-production
     volumes:
       - ./backend/database:/app/database
@@ -19,7 +20,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "4080:80"
     depends_on:
       - backend
     restart: unless-stopped

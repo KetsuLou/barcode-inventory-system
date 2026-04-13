@@ -10,6 +10,7 @@ export interface Product {
   price: number;
   description?: string;
   quantity: number;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -20,6 +21,7 @@ export interface CreateProductDto {
   price: number;
   description?: string;
   quantity?: number;
+  image_url?: string;
 }
 
 export interface UpdateProductDto {
@@ -27,6 +29,7 @@ export interface UpdateProductDto {
   price?: number;
   description?: string;
   quantity?: number;
+  image_url?: string;
 }
 
 export interface AuthContextType {
