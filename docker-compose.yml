@@ -5,8 +5,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "4081:4081"
     environment:
       - NODE_ENV=production
       - PORT=4081
@@ -21,6 +19,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - barcode-inventory-network
 
   frontend:
     build:
@@ -38,7 +38,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - barcode-inventory-network
 
 networks:
-  default:
-    name: barcode-inventory-network
+  barcode-inventory-network:
+    driver: bridge

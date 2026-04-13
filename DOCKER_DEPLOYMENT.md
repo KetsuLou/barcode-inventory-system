@@ -19,8 +19,8 @@ docker-compose up -d
 ```
 
 ### 3. 访问应用
-- 前端：http://localhost:4080
-- 后端：http://localhost:4081
+- 统一访问地址：http://localhost:4080
+- 前端和后端通过nginx代理，只需访问4080端口即可
 
 ### 4. 停止服务
 ```bash
@@ -44,10 +44,10 @@ environment:
 
 ### 端口映射
 
-- 前端：`4080:80`
-- 后端：`4081:4081`
-
-如需修改端口，请同时更新 `docker-compose.yml` 和 `frontend/nginx.conf`。
+- **统一端口**: `4080:80`
+- 前端容器对外暴露4080端口
+- 后端服务仅在Docker内部网络中运行，通过nginx代理访问
+- 如需修改端口，只需更新 `docker-compose.yml` 中的端口映射
 
 ### 数据持久化
 

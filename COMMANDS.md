@@ -204,8 +204,13 @@ environment:
 
 ## 端口说明
 
-- **4080**: 前端开发服务器 / Docker 前端服务
-- **4081**: 后端API服务器 / Docker 后端服务
+### 本地开发
+- **4080**: 前端开发服务器
+- **4081**: 后端API服务器
+
+### Docker 环境
+- **4080**: 统一访问端口（前端和后端通过nginx代理）
+- 后端服务仅在Docker内部网络中运行，不对外暴露
 
 ## 默认账户
 
@@ -219,8 +224,8 @@ environment:
 - 后端: http://localhost:4081
 
 ### Docker 环境
-- 前端: http://localhost:4080
-- 后端: http://localhost:4081
+- 统一访问: http://localhost:4080
+- 前端和后端都通过4080端口访问，nginx自动代理API请求
 
 ## 健康检查
 
@@ -232,8 +237,11 @@ curl http://localhost:4080/health
 
 ### Docker 环境
 ```bash
-curl http://localhost:4081/api/health
+# 前端健康检查
 curl http://localhost:4080/health
+
+# 后端健康检查（仅在Docker内部网络中可访问）
+docker-compose exec backend wget -qO- http://localhost:4081/api/health
 ```
 
 ## 文档
