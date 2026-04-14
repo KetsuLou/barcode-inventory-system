@@ -514,3 +514,13 @@ tar -czf /www/backup/barcode-inventory/config.tar.gz \
 
 ```bash
 cp /www/backup/b
+
+## 获取帮助
+
+如有问题，请查看：
+- [宝塔面板官方文档](https://www.bt.cn/bbs/thread-416-1-1.html)
+- [PM2官方文档](https://pm2.keymetrics.io/)
+- [Nginx官方文档](http://nginx.org/en/docs/)
+- [Docker官方文档](https://docs.docker.com/)
+- [Docker Compose官方文档](https://docs.docker.com/compose/)
+- 项目其他文档：README.md、BAOTA_DOCKER_DEPLOYMENT.md、DOCKER_DEPLOYMENT.md、COMMANDS.md

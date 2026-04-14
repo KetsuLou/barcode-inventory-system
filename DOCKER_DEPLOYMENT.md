@@ -251,6 +251,7 @@ Nginx 已配置静态文件缓存。
 如有问题，请查看：
 - README.md - 项目说明
 - BAOTA_DEPLOYMENT.md - 宝塔面板部署指南
+- BAOTA_DOCKER_DEPLOYMENT.md - 宝塔面板Docker部署指南
 - PORT_CLEANUP.md - 端口清理说明
 - CHANGELOG.md - 更新日志
 - GitHub Issues - 问题反馈
