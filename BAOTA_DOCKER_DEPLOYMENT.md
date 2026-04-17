@@ -83,14 +83,14 @@ docker --version
    - Dockerfile路径：`Dockerfile`
 5. 点击「构建」
 
-##### 步骤2：创建后端容器
+##### 步骤2：创建容器
 
 1. 点击「容器」
 2. 点击「创建容器」
 3. 填写容器信息：
-   - 容器名称：`barcode-backend`
+   - 容器名称：`barcode-inventory`
    - 镜像：`barcode-inventory-backend:latest`
-   - 端口映射：`4081:4081`
+   - 端口映射：`4080:4080`
    - 环境变量：
      - `NODE_ENV=production`
      - `JWT_SECRET=your-strong-secret-key`
@@ -99,55 +99,6 @@ docker --version
      - `/www/wwwroot/barcode-inventory/backend/uploads:/app/uploads`
    - 重启策略：`always`
 4. 点击「创建」
-
-##### 步骤3：创建前端镜像
-
-1. 点击「镜像」
-2. 点击「构建镜像」
-3. 填写镜像信息：
-   - 镜像名称：`barcode-inventory-frontend`
-   - 路径：`/www/wwwroot/barcode-inventory/frontend`
-   - Dockerfile路径：`Dockerfile`
-4. 点击「构建」
-
-##### 步骤4：创建前端容器
-
-1. 点击「容器」
-2. 点击「创建容器」
-3. 填写容器信息：
-   - 容器名称：`barcode-frontend`
-   - 镜像：`barcode-inventory-frontend:latest`
-   - 端口映射：`4080:80`
-   - 网络：选择与后端相同的网络
-   - 重启策略：`always`
-4. 点击「创建」
-
-##### 步骤5：配置Nginx反向代理
-
-1. 进入「网站」管理
-2. 点击「添加站点」
-3. 填写域名（如：`inventory.example.com`）
-4. 选择PHP版本：纯静态
-5. 点击「提交」
-
-6. 点击网站设置，进入「配置文件」，替换为以下内容：
-
-```nginx
-server {
-    listen 80;
-    server_name inventory.example.com;
-    
-    location / {
-        proxy_pass http://127.0.0.1:4080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-7. 重载Nginx配置
 
 ### 方法二：使用Docker Compose（更简单）
 
@@ -166,45 +117,13 @@ server {
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - PORT=4081
-      - JWT_SECRET=your-strong-secret-key-change-this
-    volumes:
-      - ./backend/database:/app/database
-      - ./backend/uploads:/app/uploads
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4081/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - barcode-inventory-network
-
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "4080:80"
-    depends_on:
-      backend:
-        condition: service_healthy
+      - "4080:4080"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - barcode-inventory-network
 
 networks:
   barcode-inventory-network:
@@ -277,7 +196,7 @@ docker logs barcode-frontend
 
 ```bash
 # 检查后端健康
-curl http://localhost:4081/api/health
+curl http://localhost:4080/api/health
 
 # 检查前端健康
 curl http://localhost:4080/health

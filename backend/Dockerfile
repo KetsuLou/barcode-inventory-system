@@ -17,6 +17,6 @@ RUN npm run build
 # 初始化数据库（如果不存在）
 RUN npm run init-db || true
 
-EXPOSE 4081
+EXPOSE 4080
 
 CMD ["npm", "start"]

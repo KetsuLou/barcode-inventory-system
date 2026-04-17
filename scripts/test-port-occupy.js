@@ -1,6 +1,6 @@
 const http = require('http');
 
-const ports = [4080, 4081];
+const ports = [4080];
 
 ports.forEach(port => {
   const server = http.createServer((req, res) => {

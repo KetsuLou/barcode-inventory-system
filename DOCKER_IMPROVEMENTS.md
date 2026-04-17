@@ -18,21 +18,7 @@
 ```yaml
 # 健康检查
 healthcheck:
-  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4081/api/health"]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-  start_period: 40s
-
-# 数据持久化
-volumes:
-  - ./backend/database:/app/database
-  - ./backend/uploads:/app/uploads
-
-# 网络配置
-networks:
-  default:
-    name: barcode-inventory-network
+  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4080/api/health"]
 ```
 
 ### 2. Dockerfile 优化
@@ -80,7 +66,7 @@ location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
 
 # 上传文件代理
 location /uploads {
-    proxy_pass http://backend:4081;
+    proxy_pass http://backend:4080;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
@@ -153,14 +139,8 @@ docker-compose logs -f frontend
 
 ### 健康检查
 ```bash
-# 检查后端健康
-curl http://localhost:4081/api/health
-
-# 检查前端健康
-curl http://localhost:4080/health
-
-# 查看容器健康状态
-docker-compose ps
+# 检查服务健康
+curl http://localhost:4080/api/health
 ```
 
 ## 性能提升

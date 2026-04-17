@@ -2,7 +2,7 @@ const { exec } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
 
-const ports = [4080, 4081];
+const ports = [4080];
 
 async function killPort(port) {
   const platform = process.platform;

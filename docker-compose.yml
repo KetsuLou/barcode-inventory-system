@@ -1,36 +1,12 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - PORT=4081
-      - JWT_SECRET=your-secret-key-change-in-production
-    volumes:
-      - ./backend/database:/app/database
-      - ./backend/uploads:/app/uploads
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4081/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - barcode-inventory-network
-
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "4080:80"
-    depends_on:
-      backend:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
@@ -38,8 +14,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    networks:
-      - barcode-inventory-network
 
 networks:
   barcode-inventory-network:

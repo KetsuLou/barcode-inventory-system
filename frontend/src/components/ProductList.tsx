@@ -45,7 +45,7 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
   };
 
   const handleImagePreview = (imageUrl: string) => {
-    setPreviewImage(`http://localhost:4081${imageUrl}`);
+    setPreviewImage(imageUrl);
   };
 
   const closeImagePreview = () => {
@@ -99,7 +99,7 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
                   <td className="py-3 px-4">
                     {product.image_url ? (
                       <img
-                        src={`http://localhost:4081${product.image_url}`}
+                        src={product.image_url}
                         alt={product.name}
                         className="w-12 h-12 object-cover rounded cursor-pointer hover:opacity-80"
                         onClick={() => handleImagePreview(product.image_url!)}

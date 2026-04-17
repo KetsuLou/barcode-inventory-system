@@ -1,18 +1,16 @@
-FROM node:18-alpine as builder
+FROM node:18-alpine
 
 WORKDIR /app
+
+RUN apk add --no-cache wget
 
 COPY package*.json ./
 RUN npm ci
 
 COPY . .
 RUN npm run build
+RUN npm run init-db || true
 
-FROM nginx:alpine
+EXPOSE 4080
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]

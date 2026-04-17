@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product, CreateProductDto, UpdateProductDto } from '../types';
+import { Product, CreateProductDto } from '../types';
 import { productAPI, uploadAPI } from '../services/api';
 import { Upload, X } from 'lucide-react';
 
@@ -170,7 +170,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
           {previewImage ? (
             <div className="relative inline-block">
               <img
-                src={`http://localhost:4081${previewImage}`}
+                src={previewImage}
                 alt="商品预览"
                 className="w-32 h-32 object-cover rounded-md border border-gray-300"
               />

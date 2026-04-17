@@ -81,7 +81,7 @@ npm run init-db
 ```bash
 cd /www/wwwroot/barcode-inventory/backend
 cat > .env << 'EOF'
-PORT=4081
+PORT=4080
 NODE_ENV=production
 JWT_SECRET=your-strong-secret-key-change-this
 EOF
@@ -107,7 +107,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 4081
+      PORT: 4080
     }
   }]
 };
@@ -133,7 +133,7 @@ pm2 logs barcode-backend
 测试后端API：
 
 ```bash
-curl http://localhost:4081/api/health
+curl http://localhost:4080/api/health
 ```
 
 ### 第六步：配置Nginx
@@ -169,7 +169,7 @@ server {
     }
     
     location /api {
-        proxy_pass http://127.0.0.1:4081;
+        proxy_pass http://127.0.0.1:4080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -184,7 +184,7 @@ server {
     }
     
     location /uploads {
-        proxy_pass http://127.0.0.1:4081;
+        proxy_pass http://127.0.0.1:4080;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -241,7 +241,7 @@ nginx -t && nginx -s reload
 
 - **80** - HTTP
 - **443** - HTTPS
-- **4081** - 后端API（可选）
+- **4080** - 后端API（可选）
 
 #### 2. 使用宝塔防火墙
 
@@ -385,7 +385,7 @@ listen 443 ssl http2;
 
 ```bash
 pm2 logs barcode-backend
-netstat -tlnp | grep 4081
+netstat -tlnp | grep 4080
 ls -la /www/wwwroot/barcode-inventory/backend/database/
 ```
 
@@ -401,7 +401,7 @@ tail -f /www/wwwroot/barcode-inventory/logs/error.log
 
 ```bash
 pm2 list
-curl http://localhost:4081/api/health
+curl http://localhost:4080/api/health
 nginx -t
 ```
 

@@ -6,13 +6,9 @@
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "init-db": "cd backend && npm run init-db",
     "kill-port": "node scripts/kill-port.js",
-    "dev": "npm run kill-port && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npm run kill-port && cd backend && npm run dev",
     "build": "cd backend && npm run build && cd ../frontend && npm run build",
-    "start": "npm run kill-port && concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "start:backend": "cd backend && npm start",
-    "start:frontend": "cd frontend && npm run preview"
+    "start": "npm run kill-port && cd backend && npm run start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

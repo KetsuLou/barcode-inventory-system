@@ -45,7 +45,7 @@ export const uploadImage = (req: Request, res: Response) => {
       return res.status(400).json({ error: '没有上传文件' });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     res.json({ imageUrl });
   } catch (error) {
     console.error('Upload error:', error);

@@ -36,7 +36,7 @@ docker-compose down
 ```yaml
 environment:
   - NODE_ENV=production
-  - PORT=4081
+  - PORT=4080
   - JWT_SECRET=your-secret-key-change-in-production
 ```
 
@@ -44,9 +44,8 @@ environment:
 
 ### 端口映射
 
-- **统一端口**: `4080:80`
-- 前端容器对外暴露4080端口
-- 后端服务仅在Docker内部网络中运行，通过nginx代理访问
+- **统一端口**: `4080:4080`
+- 后端直接暴露 4080 端口，同时托管前端静态文件
 - 如需修改端口，只需更新 `docker-compose.yml` 中的端口映射
 
 ### 数据持久化
@@ -70,14 +69,8 @@ docker-compose up -d
 
 ### 查看日志
 ```bash
-# 查看所有服务日志
+# 查看服务日志
 docker-compose logs
-
-# 查看后端日志
-docker-compose logs backend
-
-# 查看前端日志
-docker-compose logs frontend
 
 # 实时查看日志
 docker-compose logs -f
@@ -120,7 +113,7 @@ docker-compose ps
 ```
 
 健康检查端点：
-- 后端：`http://localhost:4081/api/health`
+- 后端：`http://localhost:4080/api/health`
 - 前端：`http://localhost:4080/health`
 
 ## 数据库初始化
@@ -143,7 +136,7 @@ docker-compose logs frontend
 ```
 
 ### 端口被占用
-如果端口4080或4081被占用，请修改 `docker-compose.yml` 中的端口映射。
+如果端口4080被占用，请修改 `docker-compose.yml` 中的端口映射。
 
 ### 数据库问题
 ```bash

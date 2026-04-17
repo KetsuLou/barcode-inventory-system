@@ -66,9 +66,11 @@ docker-compose logs -f
 docker-compose down
 ```
 
+访问 http://localhost:4080 开始使用
+
 详细部署说明请查看 [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
 
-#### 方式二：本地开发（推荐用于开发环境）
+#### 方式二：本地开发
 
 ```bash
 # 在项目根目录执行
@@ -77,47 +79,20 @@ npm run init-db
 npm run dev
 ```
 
-**说明：**
-- `npm run dev` 会自动检查并清理端口4080和4081的占用进程
-- 然后同时启动前后端开发服务器
-- 如需单独清理端口，可运行 `npm run kill-port`
-
-#### 方式二：分别启动
+#### 方式三：生产构建
 
 ```bash
-# 启动后端服务 (端口 4081)
-cd backend
-npm run dev
-
-# 启动前端服务 (端口 4080) - 在新终端中运行
-cd frontend
-npm run dev
-```
-
-#### 其他命令
-
-```bash
-# 单独清理端口占用
-npm run kill-port
-
-# 生产环境启动
 npm run build
 npm run start
 ```
 
+访问 http://localhost:4080 开始使用
+
 ### 端口说明
 
-#### 本地开发
-- **前端端口**: 4080
-- **后端端口**: 4081
-- 系统会自动检测并清理端口占用，无需手动处理
-
-#### Docker 部署
 - **统一端口**: 4080
-- 前端和后端通过nginx代理，只需访问4080端口即可
-- 后端服务仅在Docker内部网络中运行，不对外暴露
-
-访问 http://localhost:4080 开始使用
+- 前端和后端统一通过 4080 端口访问
+- 后端自动托管前端静态文件
 
 ## 📱 使用说明
 

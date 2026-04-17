@@ -58,12 +58,6 @@ docker-compose restart
 ```bash
 # 所有服务
 docker-compose logs -f
-
-# 后端服务
-docker-compose logs -f backend
-
-# 前端服务
-docker-compose logs -f frontend
 ```
 
 ### 查看服务状态
@@ -104,11 +98,9 @@ scripts\test-docker.bat
 ```bash
 # Windows
 netstat -ano | findstr :4080
-netstat -ano | findstr :4081
 
 # Linux/Mac
 lsof -i :4080
-lsof -i :4081
 ```
 
 ## 数据库操作
@@ -188,7 +180,7 @@ docker-compose --help
 ### 本地开发
 编辑 `backend/.env`:
 ```env
-PORT=4081
+PORT=4080
 JWT_SECRET=your-secret-key
 NODE_ENV=development
 ```
@@ -198,19 +190,14 @@ NODE_ENV=development
 ```yaml
 environment:
   - NODE_ENV=production
-  - PORT=4081
+  - PORT=4080
   - JWT_SECRET=your-secret-key
 ```
 
 ## 端口说明
 
-### 本地开发
-- **4080**: 前端开发服务器
-- **4081**: 后端API服务器
-
-### Docker 环境
-- **4080**: 统一访问端口（前端和后端通过nginx代理）
-- 后端服务仅在Docker内部网络中运行，不对外暴露
+统一端口：4080
+前端和后端统一通过 4080 端口访问，后端自动托管前端静态文件。
 
 ## 默认账户
 
@@ -219,29 +206,13 @@ environment:
 
 ## 访问地址
 
-### 本地开发
-- 前端: http://localhost:4080
-- 后端: http://localhost:4081
-
-### Docker 环境
-- 统一访问: http://localhost:4080
-- 前端和后端都通过4080端口访问，nginx自动代理API请求
+统一访问：http://localhost:4080
+前端和后端统一通过 4080 端口访问
 
 ## 健康检查
 
-### 本地开发
 ```bash
-curl http://localhost:4081/api/health
-curl http://localhost:4080/health
-```
-
-### Docker 环境
-```bash
-# 前端健康检查
-curl http://localhost:4080/health
-
-# 后端健康检查（仅在Docker内部网络中可访问）
-docker-compose exec backend wget -qO- http://localhost:4081/api/health
+curl http://localhost:4080/api/health
 ```
 
 ## 文档
