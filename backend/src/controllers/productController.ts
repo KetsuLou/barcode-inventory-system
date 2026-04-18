@@ -30,18 +30,18 @@ export const getProductByBarcode = (req: AuthRequest, res: Response) => {
 
 export const createProduct = (req: AuthRequest, res: Response) => {
   try {
-    const { barcode, name, price, description, quantity }: CreateProductDto = req.body;
+    const { barcode, name, price, description, quantity, image_url }: CreateProductDto = req.body;
 
     if (!barcode || !name || !price) {
       return res.status(400).json({ error: 'Barcode, name, and price are required' });
     }
 
     const stmt = db.prepare(`
-      INSERT INTO products (barcode, name, price, description, quantity)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO products (barcode, name, price, description, quantity, image_url)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(barcode, name, price, description || '', quantity || 0);
+    const result = stmt.run(barcode, name, price, description || '', quantity || 0, image_url || '');
 
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
 
@@ -58,7 +58,7 @@ export const createProduct = (req: AuthRequest, res: Response) => {
 export const updateProduct = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, price, description, quantity }: UpdateProductDto = req.body;
+    const { name, price, description, quantity, image_url }: UpdateProductDto = req.body;
 
     const existingProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
     if (!existingProduct) {
@@ -83,6 +83,10 @@ export const updateProduct = (req: AuthRequest, res: Response) => {
     if (quantity !== undefined) {
       updates.push('quantity = ?');
       values.push(quantity);
+    }
+    if (image_url !== undefined) {
+      updates.push('image_url = ?');
+      values.push(image_url);
     }
 
     if (updates.length === 0) {
