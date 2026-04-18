@@ -30,18 +30,18 @@ export const getProductByBarcode = (req: AuthRequest, res: Response) => {
 
 export const createProduct = (req: AuthRequest, res: Response) => {
   try {
-    const { barcode, name, price, description, quantity, image_url }: CreateProductDto = req.body;
+    const { barcode, name, price, description, quantity, image_url, tags }: CreateProductDto = req.body;
 
-    if (!barcode || !name || !price) {
-      return res.status(400).json({ error: 'Barcode, name, and price are required' });
+    if (!barcode || !name) {
+      return res.status(400).json({ error: 'Barcode and name are required' });
     }
 
     const stmt = db.prepare(`
-      INSERT INTO products (barcode, name, price, description, quantity, image_url)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO products (barcode, name, price, description, quantity, image_url, tags)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(barcode, name, price, description || '', quantity || 0, image_url || '');
+    const result = stmt.run(barcode, name, price || null, description || '', quantity || 0, image_url || '', tags || '');
 
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
 
@@ -58,7 +58,7 @@ export const createProduct = (req: AuthRequest, res: Response) => {
 export const updateProduct = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, price, description, quantity, image_url }: UpdateProductDto = req.body;
+    const { name, price, description, quantity, image_url, tags }: UpdateProductDto = req.body;
 
     const existingProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
     if (!existingProduct) {
@@ -87,6 +87,10 @@ export const updateProduct = (req: AuthRequest, res: Response) => {
     if (image_url !== undefined) {
       updates.push('image_url = ?');
       values.push(image_url);
+    }
+    if (tags !== undefined) {
+      updates.push('tags = ?');
+      values.push(tags);
     }
 
     if (updates.length === 0) {

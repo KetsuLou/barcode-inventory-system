@@ -23,10 +23,11 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     barcode TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    price REAL NOT NULL,
+    price REAL,
     description TEXT,
     quantity INTEGER DEFAULT 0,
     image_url TEXT,
+    tags TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );

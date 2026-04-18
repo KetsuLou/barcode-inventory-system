@@ -55,7 +55,8 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.barcode.toLowerCase().includes(searchTerm.toLowerCase())
+      product.barcode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.tags && product.tags.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -89,6 +90,7 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">商品名称</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">单价</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">数量</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">标签</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">备注</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">操作</th>
               </tr>
@@ -112,8 +114,24 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
                   </td>
                   <td className="py-3 px-4 font-mono text-sm">{product.barcode}</td>
                   <td className="py-3 px-4 font-medium">{product.name}</td>
-                  <td className="py-3 px-4">¥{product.price.toFixed(2)}</td>
-                  <td className="py-3 px-4">{product.quantity}</td>
+                  <td className="py-3 px-4">{product.price ? `¥${product.price.toFixed(2)}` : '-'}</td>
+                  <td className="py-3 px-4">{product.quantity || 0}</td>
+                  <td className="py-3 px-4">
+                    {product.tags ? (
+                      <div className="flex flex-wrap gap-1">
+                        {product.tags.split(',').map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
                   <td className="py-3 px-4 text-gray-500 text-sm max-w-xs truncate">
                     {product.description || '-'}
                   </td>

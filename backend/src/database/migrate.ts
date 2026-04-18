@@ -23,4 +23,17 @@ try {
   }
 }
 
+try {
+  db.exec(`
+    ALTER TABLE products ADD COLUMN tags TEXT;
+  `);
+  console.log('Migration completed successfully! Added tags column to products table.');
+} catch (error: any) {
+  if (error.message.includes('duplicate column name')) {
+    console.log('Column tags already exists, skipping migration.');
+  } else {
+    console.error('Migration failed:', error);
+  }
+}
+
 db.close();
