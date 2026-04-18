@@ -24,6 +24,7 @@
     "dev": "vite --host",
     "start": "vite --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "clean": "rm -rf node_modules/.vite dist .vite"
   }
 }

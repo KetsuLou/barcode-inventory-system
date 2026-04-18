@@ -6,6 +6,7 @@
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "init-db": "cd backend && npm run init-db",
     "kill-port": "node scripts/kill-port.js",
+    "clean": "node scripts/clean.js",
     "dev": "npm run kill-port && cd backend && npm run dev",
     "build": "cd backend && npm run build && cd ../frontend && npm run build",
     "start": "npm run kill-port && cd backend && npm run start"
