@@ -25,7 +25,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       config,
       (decodedText) => {
         onScan(decodedText);
-        scanner.stop();
+        onClose();
       },
       () => {
         // Ignore scanning errors
