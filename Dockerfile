@@ -4,9 +4,9 @@ WORKDIR /app
 
 RUN apk add --no-cache wget
 
-# 安装后端依赖
+# 安装后端依赖（包括 devDependencies 用于构建）
 COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --only=production
+RUN cd backend && npm ci
 
 # 安装前端依赖
 COPY frontend/package*.json ./frontend/

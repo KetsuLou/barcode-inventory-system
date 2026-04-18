@@ -61,7 +61,152 @@ docker --version
 
 ## 部署步骤
 
-### 方法一：使用宝塔Docker管理器（推荐）
+### 方法一：使用宝塔Docker容器编排（推荐）
+
+宝塔面板的容器编排功能可以通过可视化界面管理 Docker Compose 项目。
+
+#### 1. 上传项目文件
+
+1. 登录宝塔面板
+2. 进入「文件」管理
+3. 创建项目目录：`/www/wwwroot/barcode-inventory`
+4. 将项目文件上传到该目录（包含 docker-compose.yml）
+
+#### 2. 创建编排项目
+
+1. 进入「Docker」管理
+2. 点击「编排」
+3. 点击「创建编排项目」
+4. 填写项目信息：
+   - 名称：`barcode-inventory`
+   - 路径：`/www/wwwroot/barcode-inventory`
+5. 点击「确定」
+
+#### 3. 配置docker-compose.yml（如需要）
+
+编排项目创建后，可以编辑 docker-compose.yml：
+
+```yaml
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4080:4080"
+    volumes:
+      - ./backend/database:/app/database
+      - ./backend/uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=4080
+      - JWT_SECRET=your-strong-secret-key-change-in-production
+    restart: unless-stopped
+```
+
+#### 4. 部署服务
+
+1. 在编排项目中，点击「拉取/构建」
+2. 选择要构建的服务
+3. 点击「构建镜像」
+4. 构建完成后，点击「启动」
+
+#### 5. 验证部署
+
+1. 点击「容器」查看运行状态
+2. 访问 http://服务器IP:4080 测试
+
+#### 6. 配置反向代理
+
+**方法一：使用宝塔反向代理功能（Nginx）**
+
+1. 进入「网站」管理
+2. 点击「添加站点」
+3. 填写域名（如：`inventory.jacklou.cn`）
+4. 选择PHP版本：纯静态
+5. 点击「提交」
+6. 点击站点右侧「设置」
+7. 进入「反向代理」
+8. 点击「添加反向代理」
+9. 配置：
+   - 代理名称：`barcode-inventory`
+   - 目标URL：`http://127.0.0.1:4080`
+   - 发送域名：`$host`
+10. 点击「提交」
+
+**方法二：使用Apache反向代理**
+
+1. 进入「网站」管理
+2. 点击「添加站点」
+3. 填写域名（如：`inventory.jacklou.cn`）
+4. 选择PHP版本：选择任意PHP版本（如 PHP-74）
+5. 点击「提交」
+6. 点击站点右侧「设置」
+7. 进入「配置文件」
+8. 替换为以下内容：
+
+```apache
+<VirtualHost *:80>
+    ServerName 你的域名
+    DocumentRoot /www/wwwroot/你的域名
+    
+    # 启用代理模块
+    ProxyRequests Off
+    ProxyPass / http://127.0.0.1:4080/
+    ProxyPassReverse / http://127.0.0.1:4080/
+    
+    # 代理请求头
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "http"
+    
+    # 错误日志
+    ErrorLog "/www/wwwlogs/你的域名-error_log"
+    CustomLog "/www/wwwlogs/你的域名-access_log" combined
+</VirtualHost>
+```
+
+9. 启用Apache模块：
+```bash
+# SSH终端执行
+a2enmod proxy proxy_http headers
+systemctl restart httpd
+```
+
+**方法三：手动配置Nginx**
+
+1. 点击站点右侧「设置」
+2. 进入「配置文件」
+3. 替换为以下内容：
+
+```nginx
+server {
+    listen 80;
+    server_name 你的域名;
+    
+    location / {
+        proxy_pass http://127.0.0.1:4080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+#### 7. 常用操作
+
+在宝塔Docker编排界面可以：
+- **启动/停止**：一键启停所有服务
+- **重启**：重新启动服务
+- **日志**：查看实时日志
+- **伸缩**：调整服务副本数
+- **删除**：移除整个编排项目
+
+---
+
+### 方法二：使用宝塔Docker管理器
 
 #### 1. 上传项目文件
 
@@ -100,7 +245,7 @@ docker --version
    - 重启策略：`always`
 4. 点击「创建」
 
-### 方法二：使用Docker Compose（更简单）
+### 方法三：使用Docker Compose命令
 
 #### 1. 上传项目文件
 
@@ -123,11 +268,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "4080:4080"
+    volumes:
+      - ./backend/database:/app/database
+      - ./backend/uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=4080
+      - JWT_SECRET=your-strong-secret-key-change-in-production
     restart: unless-stopped
-
-networks:
-  barcode-inventory-network:
-    driver: bridge
 ```
 
 **重要：** 修改 `JWT_SECRET` 为强密码。
@@ -188,18 +336,14 @@ docker ps
 docker ps | grep barcode
 
 # 查看容器日志
-docker logs barcode-backend
-docker logs barcode-frontend
+docker logs barcode-inventory
 ```
 
 ### 2. 检查服务健康
 
 ```bash
-# 检查后端健康
+# 检查服务健康
 curl http://localhost:4080/api/health
-
-# 检查前端健康
-curl http://localhost:4080/health
 ```
 
 ### 3. 测试访问
@@ -263,22 +407,22 @@ docker network ls
 docker volume ls
 
 # 进入容器
-docker exec -it barcode-backend sh
+docker exec -it barcode-inventory sh
 
 # 查看容器日志
-docker logs -f barcode-backend
+docker logs -f barcode-inventory
 
 # 重启容器
-docker restart barcode-backend
+docker restart barcode-inventory
 
 # 停止容器
-docker stop barcode-backend
+docker stop barcode-inventory
 
 # 启动容器
-docker start barcode-backend
+docker start barcode-inventory
 
 # 删除容器
-docker rm barcode-backend
+docker rm barcode-inventory
 
 # 删除镜像
 docker rmi barcode-inventory-backend
@@ -448,20 +592,20 @@ Dockerfile已使用多阶段构建，减小镜像体积。
 docker stats
 
 # 查看特定容器
-docker stats barcode-backend
+docker stats barcode-inventory
 ```
 
 ### 3. 日志管理
 
 ```bash
 # 查看容器日志
-docker logs -f barcode-backend
+docker logs -f barcode-inventory
 
 # 查看最近100行日志
-docker logs --tail 100 barcode-backend
+docker logs --tail 100 barcode-inventory
 
 # 查看特定时间段的日志
-docker logs --since 2024-04-14T00:00:00 barcode-backend
+docker logs --since 2024-04-14T00:00:00 barcode-inventory
 ```
 
 ## 定时任务

@@ -1,20 +1,15 @@
-version: '3.8'
-
 services:
   frontend:
     build:
-      context: ./frontend
+      context: .
       dockerfile: Dockerfile
     ports:
-      - "4080:80"
+      - "4080:4080"
+    volumes:
+      - ./backend/database:/app/backend/database
+      - ./backend/uploads:/app/backend/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=4080
+      - JWT_SECRET=your-strong-secret-key-change-in-production
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-networks:
-  barcode-inventory-network:
-    driver: bridge
