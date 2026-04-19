@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import db from '../database/connection';
 import { AuthRequest, CreateProductDto, UpdateProductDto } from '../types';
+import { downloadImage } from '../utils/downloadImage';
 
 export const getAllProducts = (req: AuthRequest, res: Response) => {
   try {
@@ -42,7 +43,7 @@ export const getProductByBarcode = (req: AuthRequest, res: Response) => {
   }
 };
 
-export const createProduct = (req: AuthRequest, res: Response) => {
+export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
     const { barcode, name, price, description, quantity, image_url, tags, remark_images }: CreateProductDto = req.body;
 
@@ -50,12 +51,21 @@ export const createProduct = (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Barcode and name are required' });
     }
 
+    let finalImageUrl = image_url || '';
+    
+    if (image_url && image_url.startsWith('http')) {
+      const downloadedImageUrl = await downloadImage(image_url);
+      if (downloadedImageUrl) {
+        finalImageUrl = downloadedImageUrl;
+      }
+    }
+
     const stmt = db.prepare(`
       INSERT INTO products (barcode, name, price, description, quantity, image_url, tags)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(barcode, name, price || null, description || '', quantity || 0, image_url || '', tags || '');
+    const result = stmt.run(barcode, name, price || null, description || '', quantity || 0, finalImageUrl, tags || '');
 
     const productId = result.lastInsertRowid as number;
 
@@ -82,7 +92,7 @@ export const createProduct = (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateProduct = (req: AuthRequest, res: Response) => {
+export const updateProduct = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { name, price, description, quantity, image_url, tags, remark_images }: UpdateProductDto = req.body;
@@ -112,8 +122,17 @@ export const updateProduct = (req: AuthRequest, res: Response) => {
       values.push(quantity);
     }
     if (image_url !== undefined) {
+      let finalImageUrl = image_url;
+      
+      if (image_url && image_url.startsWith('http')) {
+        const downloadedImageUrl = await downloadImage(image_url);
+        if (downloadedImageUrl) {
+          finalImageUrl = downloadedImageUrl;
+        }
+      }
+      
       updates.push('image_url = ?');
-      values.push(image_url);
+      values.push(finalImageUrl);
     }
     if (tags !== undefined) {
       updates.push('tags = ?');

@@ -417,7 +417,7 @@ const BarcodeApiConfigForm: React.FC<BarcodeApiConfigFormProps> = ({ config, onS
             placeholder='{"name": "data.productName", "price": "data.price"}'
           />
           <p className="text-xs text-gray-500 mt-1">
-            将API响应映射到商品字段，支持嵌套路径
+            将API响应映射到商品字段，支持嵌套路径。可用字段：name, price, description, quantity, image_url, tags
           </p>
         </div>
 
