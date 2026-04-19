@@ -6,11 +6,12 @@ import { Upload, X, Plus } from 'lucide-react';
 interface ProductFormProps {
   product?: Product;
   initialBarcode?: string;
+  productInfo?: any;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSuccess, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, productInfo, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState<CreateProductDto>({
     barcode: initialBarcode || '',
     name: '',
@@ -50,10 +51,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
       if (product.remark_images) {
         setRemarkImages(product.remark_images.map(img => img.image_url));
       }
+    } else if (productInfo) {
+      setFormData({
+        barcode: initialBarcode || '',
+        name: productInfo.name || '',
+        price: productInfo.price || undefined,
+        description: productInfo.description || '',
+        quantity: productInfo.quantity || undefined,
+        image_url: productInfo.image_url || '',
+        tags: productInfo.tags || '',
+        remark_images: [],
+      });
+      if (productInfo.image_url) {
+        setPreviewImages([productInfo.image_url]);
+      }
+      if (productInfo.tags) {
+        setTags(productInfo.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t));
+      }
     } else if (initialBarcode) {
       setFormData(prev => ({ ...prev, barcode: initialBarcode }));
     }
-  }, [product, initialBarcode]);
+  }, [product, initialBarcode, productInfo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

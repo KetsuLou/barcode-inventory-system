@@ -16,6 +16,7 @@ const Dashboard: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
+  const [scannedProductInfo, setScannedProductInfo] = useState<any>(undefined);
 
   const handleLogout = () => {
     logout();
@@ -25,6 +26,7 @@ const Dashboard: React.FC = () => {
   const handleAddProduct = () => {
     setEditingProduct(undefined);
     setScannedBarcode('');
+    setScannedProductInfo(undefined);
     setShowForm(true);
   };
 
@@ -36,6 +38,7 @@ const Dashboard: React.FC = () => {
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingProduct(undefined);
+    setScannedProductInfo(undefined);
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -43,28 +46,15 @@ const Dashboard: React.FC = () => {
     setShowForm(false);
     setEditingProduct(undefined);
     setScannedBarcode('');
+    setScannedProductInfo(undefined);
   };
 
   const handleScan = useCallback((barcode: string, productInfo?: any) => {
     setShowScanner(false);
     setEditingProduct(undefined);
     setScannedBarcode(barcode);
+    setScannedProductInfo(productInfo);
     setShowForm(true);
-    
-    if (productInfo) {
-      setEditingProduct({
-        id: 0,
-        barcode,
-        name: productInfo.name || '',
-        price: productInfo.price || 0,
-        description: productInfo.description || '',
-        quantity: productInfo.quantity || 0,
-        image_url: productInfo.image_url || '',
-        tags: productInfo.tags || '',
-        created_at: '',
-        updated_at: '',
-      });
-    }
   }, []);
 
   if (isLoading) {
@@ -131,6 +121,7 @@ const Dashboard: React.FC = () => {
             <ProductForm
               product={editingProduct}
               initialBarcode={scannedBarcode}
+              productInfo={scannedProductInfo}
               onSuccess={handleFormSuccess}
               onCancel={handleFormCancel}
             />
