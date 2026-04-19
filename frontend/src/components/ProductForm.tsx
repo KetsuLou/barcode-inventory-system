@@ -29,6 +29,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, prod
   const [remarkImages, setRemarkImages] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (product) {
@@ -64,12 +65,34 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, prod
       });
       if (productInfo.image_url) {
         setPreviewImages([productInfo.image_url]);
+      } else {
+        setPreviewImages([]);
       }
       if (productInfo.tags) {
         setTags(productInfo.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t));
+      } else {
+        setTags([]);
       }
+      setRemarkImages([]);
     } else if (initialBarcode) {
       setFormData(prev => ({ ...prev, barcode: initialBarcode }));
+      setPreviewImages([]);
+      setTags([]);
+      setRemarkImages([]);
+    } else {
+      setFormData({
+        barcode: '',
+        name: '',
+        price: undefined,
+        description: '',
+        quantity: undefined,
+        image_url: '',
+        tags: '',
+        remark_images: [],
+      });
+      setPreviewImages([]);
+      setTags([]);
+      setRemarkImages([]);
     }
   }, [product, initialBarcode, productInfo]);
 
@@ -143,6 +166,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, prod
   const handleRemoveRemarkImage = (index: number) => {
     const newImages = remarkImages.filter((_, i) => i !== index);
     setRemarkImages(newImages);
+  };
+
+  const handleImagePreview = (imageUrl: string) => {
+    setPreviewImage(imageUrl);
+  };
+
+  const closeImagePreview = () => {
+    setPreviewImage(null);
   };
 
   const handleAddTag = () => {
@@ -338,7 +369,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, prod
                   <img
                     src={imageUrl}
                     alt={`商品预览 ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md border border-gray-300"
+                    className="w-full h-32 object-cover rounded-md border border-gray-300 cursor-pointer hover:opacity-80"
+                    onClick={() => handleImagePreview(imageUrl)}
                   />
                   <button
                     type="button"
@@ -390,6 +422,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, prod
           </button>
         </div>
       </form>
+
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeImagePreview}>
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <button
+              onClick={closeImagePreview}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300"
+            >
+              <X size={32} />
+            </button>
+            <img
+              src={previewImage}
+              alt="预览"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
