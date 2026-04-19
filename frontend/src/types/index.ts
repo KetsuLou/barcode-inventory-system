@@ -53,3 +53,36 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+
+export interface BarcodeApiConfig {
+  id: number;
+  name: string;
+  url: string;
+  method: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBarcodeApiConfigDto {
+  name: string;
+  url: string;
+  method?: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled?: number;
+}
+
+export interface UpdateBarcodeApiConfigDto {
+  name?: string;
+  url?: string;
+  method?: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled?: number;
+}

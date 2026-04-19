@@ -5,7 +5,7 @@ import { Product } from '../types';
 import ProductList from '../components/ProductList';
 import ProductForm from '../components/ProductForm';
 import BarcodeScanner from '../components/BarcodeScanner';
-import { Plus, Scan, LogOut, Package } from 'lucide-react';
+import { Plus, Scan, LogOut, Package, Settings } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, logout, isAuthenticated, isLoading } = useAuth();
@@ -45,11 +45,26 @@ const Dashboard: React.FC = () => {
     setScannedBarcode('');
   };
 
-  const handleScan = useCallback((barcode: string) => {
+  const handleScan = useCallback((barcode: string, productInfo?: any) => {
     setShowScanner(false);
     setEditingProduct(undefined);
     setScannedBarcode(barcode);
     setShowForm(true);
+    
+    if (productInfo) {
+      setEditingProduct({
+        id: 0,
+        barcode,
+        name: productInfo.name || '',
+        price: productInfo.price || 0,
+        description: productInfo.description || '',
+        quantity: productInfo.quantity || 0,
+        image_url: productInfo.image_url || '',
+        tags: productInfo.tags || '',
+        created_at: '',
+        updated_at: '',
+      });
+    }
   }, []);
 
   if (isLoading) {
@@ -70,6 +85,13 @@ const Dashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-800">商品库存管理</h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/config')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                title="扫码API配置"
+              >
+                <Settings size={20} />
+              </button>
               <span className="text-gray-600">欢迎, {user?.username}</span>
               <button
                 onClick={handleLogout}

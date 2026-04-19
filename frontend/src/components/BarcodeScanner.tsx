@@ -1,15 +1,41 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import { barcodeApiConfigAPI } from '../services/api';
 
 interface BarcodeScannerProps {
-  onScan: (barcode: string) => void;
+  onScan: (barcode: string, productInfo?: any) => void;
   onClose: () => void;
 }
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string>('');
+
+  const handleScan = async (decodedText: string) => {
+    setScannedBarcode(decodedText);
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await barcodeApiConfigAPI.getEnabled();
+      if (response.data) {
+        const testResponse = await barcodeApiConfigAPI.test(response.data.id, decodedText);
+        if (testResponse.data.success) {
+          onScan(decodedText, testResponse.data.data);
+          onClose();
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch product info:', err);
+    }
+
+    onScan(decodedText);
+    onClose();
+  };
 
   useEffect(() => {
     const scanner = new Html5Qrcode('reader');
@@ -24,8 +50,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       { facingMode: 'environment' },
       config,
       (decodedText) => {
-        onScan(decodedText);
-        onClose();
+        handleScan(decodedText);
       },
       () => {
       }
@@ -56,6 +81,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         
         {error ? (
           <div className="text-red-500 text-center py-8">{error}</div>
+        ) : loading ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="animate-spin text-blue-600 mb-2" size={32} />
+            <p className="text-sm text-gray-600">正在获取商品信息...</p>
+            {scannedBarcode && (
+              <p className="text-xs text-gray-500 mt-1">条形码: {scannedBarcode}</p>
+            )}
+          </div>
         ) : (
           <div id="reader" className="w-full"></div>
         )}

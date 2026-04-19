@@ -56,4 +56,14 @@ export const uploadAPI = {
   },
 };
 
+export const barcodeApiConfigAPI = {
+  getAll: () => api.get('/barcode-api-config'),
+  getEnabled: () => api.get('/barcode-api-config/enabled'),
+  getById: (id: number) => api.get(`/barcode-api-config/${id}`),
+  create: (data: any) => api.post('/barcode-api-config', data),
+  update: (id: number, data: any) => api.put(`/barcode-api-config/${id}`, data),
+  delete: (id: number) => api.delete(`/barcode-api-config/${id}`),
+  test: (id: number, barcode: string) => api.post(`/barcode-api-config/${id}/test`, { barcode }),
+};
+
 export default api;
