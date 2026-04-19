@@ -14,6 +14,7 @@ const BarcodeApiConfigPage: React.FC = () => {
   const [testBarcode, setTestBarcode] = useState('');
   const [testResult, setTestResult] = useState<any>(null);
   const [testError, setTestError] = useState('');
+  const [selectedConfigId, setSelectedConfigId] = useState<number | null>(null);
 
   useEffect(() => {
     loadConfigs();
@@ -219,14 +220,13 @@ const BarcodeApiConfigPage: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">测试配置</h3>
             <div className="flex gap-4 mb-4">
               <select
-                value={testResult ? '' : ''}
+                value={selectedConfigId || ''}
                 onChange={(e) => {
-                  const config = configs.find(c => c.id === Number(e.target.value));
-                  if (config) {
-                    setTestBarcode('');
-                    setTestResult(null);
-                    setTestError('');
-                  }
+                  const configId = Number(e.target.value);
+                  setSelectedConfigId(configId || null);
+                  setTestBarcode('');
+                  setTestResult(null);
+                  setTestError('');
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -246,10 +246,10 @@ const BarcodeApiConfigPage: React.FC = () => {
               />
               <button
                 onClick={() => {
-                  const select = document.querySelector('select') as HTMLSelectElement;
-                  const configId = Number(select.value);
-                  if (configId) {
-                    handleTest(configId);
+                  if (selectedConfigId) {
+                    handleTest(selectedConfigId);
+                  } else {
+                    alert('请选择配置');
                   }
                 }}
                 disabled={testingConfig !== null}
