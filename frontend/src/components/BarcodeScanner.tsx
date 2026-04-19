@@ -28,7 +28,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         onClose();
       },
       () => {
-        // Ignore scanning errors
       }
     ).catch((err) => {
       setError('无法启动摄像头，请确保已授予摄像头权限');
@@ -36,11 +35,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     });
 
     return () => {
-      if (scannerRef.current) {
+      if (scannerRef.current && scannerRef.current.isScanning) {
         scannerRef.current.stop().catch(console.error);
       }
     };
-  }, [onScan]);
+  }, [onScan, onClose]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">

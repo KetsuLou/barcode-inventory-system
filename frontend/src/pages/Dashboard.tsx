@@ -8,10 +8,11 @@ import BarcodeScanner from '../components/BarcodeScanner';
 import { Plus, Scan, LogOut, Package } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
@@ -51,6 +52,10 @@ const Dashboard: React.FC = () => {
     setShowForm(true);
   }, []);
 
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">加载中...</div>;
+  }
+
   if (!isAuthenticated) {
     return null;
   }
@@ -88,7 +93,10 @@ const Dashboard: React.FC = () => {
             添加商品
           </button>
           <button
-            onClick={() => setShowScanner(true)}
+            onClick={() => {
+              setScannerKey(prev => prev + 1);
+              setShowScanner(true);
+            }}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
           >
             <Scan size={20} />
@@ -115,6 +123,7 @@ const Dashboard: React.FC = () => {
 
       {showScanner && (
         <BarcodeScanner
+          key={scannerKey}
           onScan={handleScan}
           onClose={() => setShowScanner(false)}
         />

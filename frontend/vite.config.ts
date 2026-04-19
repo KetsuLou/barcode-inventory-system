@@ -1,27 +1,19 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,
-    host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:4080',
-        changeOrigin: true
-      },
-      '/uploads': {
-        target: 'http://localhost:4080',
-        changeOrigin: true
-      }
-    }
-  },
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: undefined
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  
+  return {
+    plugins: [react()],
+    server: {
+      port: 4080,
+      host: true,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_TARGET || 'http://localhost:4080',
+          changeOrigin: true
+        }
       }
     }
   }
