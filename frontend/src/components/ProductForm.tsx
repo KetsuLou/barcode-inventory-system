@@ -6,11 +6,12 @@ import { Upload, X, Plus } from 'lucide-react';
 interface ProductFormProps {
   product?: Product;
   initialBarcode?: string;
+  productInfo?: any;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSuccess, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, productInfo, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState<CreateProductDto>({
     barcode: initialBarcode || '',
     name: '',
@@ -19,13 +20,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
     quantity: undefined,
     image_url: '',
     tags: '',
+    remark_images: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [remarkImages, setRemarkImages] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (product) {
@@ -37,6 +41,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
         quantity: product.quantity,
         image_url: product.image_url || '',
         tags: product.tags || '',
+        remark_images: product.remark_images?.map(img => img.image_url) || [],
       });
       if (product.image_url) {
         setPreviewImages([product.image_url]);
@@ -44,10 +49,52 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
       if (product.tags) {
         setTags(product.tags.split(',').map(t => t.trim()).filter(t => t));
       }
+      if (product.remark_images) {
+        setRemarkImages(product.remark_images.map(img => img.image_url));
+      }
+    } else if (productInfo) {
+      setFormData({
+        barcode: initialBarcode || '',
+        name: productInfo.name || '',
+        price: productInfo.price || undefined,
+        description: productInfo.description || '',
+        quantity: productInfo.quantity || undefined,
+        image_url: productInfo.image_url || '',
+        tags: productInfo.tags || '',
+        remark_images: [],
+      });
+      if (productInfo.image_url) {
+        setPreviewImages([productInfo.image_url]);
+      } else {
+        setPreviewImages([]);
+      }
+      if (productInfo.tags) {
+        setTags(productInfo.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t));
+      } else {
+        setTags([]);
+      }
+      setRemarkImages([]);
     } else if (initialBarcode) {
       setFormData(prev => ({ ...prev, barcode: initialBarcode }));
+      setPreviewImages([]);
+      setTags([]);
+      setRemarkImages([]);
+    } else {
+      setFormData({
+        barcode: '',
+        name: '',
+        price: undefined,
+        description: '',
+        quantity: undefined,
+        image_url: '',
+        tags: '',
+        remark_images: [],
+      });
+      setPreviewImages([]);
+      setTags([]);
+      setRemarkImages([]);
     }
-  }, [product, initialBarcode]);
+  }, [product, initialBarcode, productInfo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +106,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
         ...formData,
         tags: tags.join(','),
         image_url: previewImages.length > 0 ? previewImages[0] : '',
+        remark_images: remarkImages,
       };
       
       if (product) {
@@ -97,6 +145,37 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
     setPreviewImages(newImages);
   };
 
+  const handleRemarkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await uploadAPI.uploadImage(file);
+      const imageUrl = response.data.imageUrl;
+      setRemarkImages([...remarkImages, imageUrl]);
+    } catch (err: any) {
+      setError(err.response?.data?.error || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveRemarkImage = (index: number) => {
+    const newImages = remarkImages.filter((_, i) => i !== index);
+    setRemarkImages(newImages);
+  };
+
+  const handleImagePreview = (imageUrl: string) => {
+    setPreviewImage(imageUrl);
+  };
+
+  const closeImagePreview = () => {
+    setPreviewImage(null);
+  };
+
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()]);
@@ -122,8 +201,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
       </h2>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4 flex items-start gap-2">
+          <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+          <div className="flex-1">
+            <p className="font-medium">操作失败</p>
+            <p className="text-sm mt-1">{error}</p>
+          </div>
         </div>
       )}
 
@@ -196,6 +281,52 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
+            备注图片
+          </label>
+          {remarkImages.length > 0 ? (
+            <div className="grid grid-cols-4 gap-2 mb-2">
+              {remarkImages.map((imageUrl, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={imageUrl}
+                    alt={`备注图片 ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-md border border-gray-300 cursor-pointer hover:opacity-80"
+                    onClick={() => handleImagePreview(imageUrl)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveRemarkImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+            <input
+              type="file"
+              id="remark-image-upload"
+              accept="image/*"
+              onChange={handleRemarkImageUpload}
+              className="hidden"
+              disabled={uploading}
+            />
+            <label
+              htmlFor="remark-image-upload"
+              className="cursor-pointer flex flex-col items-center"
+            >
+              <Upload size={32} className="text-gray-400 mb-2" />
+              <span className="text-sm text-gray-600">
+                {uploading ? '上传中...' : '点击上传备注图片'}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             标签
           </label>
           <div className="flex gap-2 mb-2">
@@ -245,7 +376,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
                   <img
                     src={imageUrl}
                     alt={`商品预览 ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md border border-gray-300"
+                    className="w-full h-32 object-cover rounded-md border border-gray-300 cursor-pointer hover:opacity-80"
+                    onClick={() => handleImagePreview(imageUrl)}
                   />
                   <button
                     type="button"
@@ -297,6 +429,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
           </button>
         </div>
       </form>
+
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={closeImagePreview}>
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <button
+              onClick={closeImagePreview}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300"
+            >
+              <X size={32} />
+            </button>
+            <img
+              src={previewImage}
+              alt="预览"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

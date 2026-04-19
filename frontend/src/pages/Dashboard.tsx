@@ -5,7 +5,7 @@ import { Product } from '../types';
 import ProductList from '../components/ProductList';
 import ProductForm from '../components/ProductForm';
 import BarcodeScanner from '../components/BarcodeScanner';
-import { Plus, Scan, LogOut, Package } from 'lucide-react';
+import { Plus, Scan, LogOut, Package, Settings } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, logout, isAuthenticated, isLoading } = useAuth();
@@ -16,6 +16,7 @@ const Dashboard: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
+  const [scannedProductInfo, setScannedProductInfo] = useState<any>(undefined);
 
   const handleLogout = () => {
     logout();
@@ -25,6 +26,7 @@ const Dashboard: React.FC = () => {
   const handleAddProduct = () => {
     setEditingProduct(undefined);
     setScannedBarcode('');
+    setScannedProductInfo(undefined);
     setShowForm(true);
   };
 
@@ -36,6 +38,7 @@ const Dashboard: React.FC = () => {
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingProduct(undefined);
+    setScannedProductInfo(undefined);
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -43,12 +46,14 @@ const Dashboard: React.FC = () => {
     setShowForm(false);
     setEditingProduct(undefined);
     setScannedBarcode('');
+    setScannedProductInfo(undefined);
   };
 
-  const handleScan = useCallback((barcode: string) => {
+  const handleScan = useCallback((barcode: string, productInfo?: any) => {
     setShowScanner(false);
     setEditingProduct(undefined);
     setScannedBarcode(barcode);
+    setScannedProductInfo(productInfo);
     setShowForm(true);
   }, []);
 
@@ -70,6 +75,13 @@ const Dashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-800">商品库存管理</h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/config')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                title="扫码API配置"
+              >
+                <Settings size={20} />
+              </button>
               <span className="text-gray-600">欢迎, {user?.username}</span>
               <button
                 onClick={handleLogout}
@@ -109,6 +121,7 @@ const Dashboard: React.FC = () => {
             <ProductForm
               product={editingProduct}
               initialBarcode={scannedBarcode}
+              productInfo={scannedProductInfo}
               onSuccess={handleFormSuccess}
               onCancel={handleFormCancel}
             />

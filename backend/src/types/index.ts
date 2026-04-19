@@ -22,6 +22,14 @@ export interface Product {
   tags?: string;
   created_at: string;
   updated_at: string;
+  remark_images?: RemarkImage[];
+}
+
+export interface RemarkImage {
+  id: number;
+  product_id: number;
+  image_url: string;
+  created_at: string;
 }
 
 export interface CreateProductDto {
@@ -32,6 +40,7 @@ export interface CreateProductDto {
   quantity?: number;
   image_url?: string;
   tags?: string;
+  remark_images?: string[];
 }
 
 export interface UpdateProductDto {
@@ -41,6 +50,7 @@ export interface UpdateProductDto {
   quantity?: number;
   image_url?: string;
   tags?: string;
+  remark_images?: string[];
 }
 
 export interface LoginDto {
@@ -54,4 +64,37 @@ export interface AuthResponse {
     id: number;
     username: string;
   };
+}
+
+export interface BarcodeApiConfig {
+  id: number;
+  name: string;
+  url: string;
+  method: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBarcodeApiConfigDto {
+  name: string;
+  url: string;
+  method?: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled?: number;
+}
+
+export interface UpdateBarcodeApiConfigDto {
+  name?: string;
+  url?: string;
+  method?: string;
+  headers?: string;
+  params?: string;
+  response_mapping?: string;
+  enabled?: number;
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { productAPI } from '../services/api';
-import { Edit, Trash2, Search, X } from 'lucide-react';
+import { Edit, Trash2, Search, X, Scan } from 'lucide-react';
+import BarcodeScanner from './BarcodeScanner';
 
 interface ProductListProps {
   onEdit: (product: Product) => void;
@@ -13,6 +14,8 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
 
   useEffect(() => {
     loadProducts();
@@ -52,6 +55,11 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
     setPreviewImage(null);
   };
 
+  const handleScan = (barcode: string) => {
+    setSearchTerm(barcode);
+    setShowScanner(false);
+  };
+
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,6 +80,16 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <button
+          onClick={() => {
+            setScannerKey(prev => prev + 1);
+            setShowScanner(true);
+          }}
+          className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          title="扫码搜索"
+        >
+          <Scan size={20} />
+        </button>
       </div>
 
       {loading ? (
@@ -176,6 +194,14 @@ const ProductList: React.FC<ProductListProps> = ({ onEdit, onRefresh }) => {
             />
           </div>
         </div>
+      )}
+
+      {showScanner && (
+        <BarcodeScanner
+          key={scannerKey}
+          onScan={handleScan}
+          onClose={() => setShowScanner(false)}
+        />
       )}
     </div>
   );

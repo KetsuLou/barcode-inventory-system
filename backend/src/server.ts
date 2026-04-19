@@ -5,6 +5,7 @@ import path from 'path';
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import uploadRoutes from './routes/upload';
+import barcodeApiConfigRoutes from './routes/barcodeApiConfig';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/barcode-api-config', barcodeApiConfigRoutes);
 
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 app.get('*', (req, res) => {
