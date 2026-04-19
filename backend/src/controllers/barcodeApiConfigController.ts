@@ -176,13 +176,27 @@ export const testConfig = async (req: AuthRequest, res: Response) => {
     let url = config.url;
     let data = undefined;
 
-    if (config.method === 'GET') {
-      const params = config.params ? JSON.parse(config.params) : {};
-      const queryParams = { ...params, barcode };
-      url = `${url}?${new URLSearchParams(queryParams).toString()}`;
+    if (url.includes('{barcode}')) {
+      url = url.replace('{barcode}', barcode);
+      
+      if (config.method === 'GET') {
+        const params = config.params ? JSON.parse(config.params) : {};
+        if (Object.keys(params).length > 0) {
+          url = `${url}?${new URLSearchParams(params).toString()}`;
+        }
+      } else {
+        const params = config.params ? JSON.parse(config.params) : {};
+        data = params;
+      }
     } else {
-      const params = config.params ? JSON.parse(config.params) : {};
-      data = { ...params, barcode };
+      if (config.method === 'GET') {
+        const params = config.params ? JSON.parse(config.params) : {};
+        const queryParams = { ...params, barcode };
+        url = `${url}?${new URLSearchParams(queryParams).toString()}`;
+      } else {
+        const params = config.params ? JSON.parse(config.params) : {};
+        data = { ...params, barcode };
+      }
     }
 
     const response = await axios({
