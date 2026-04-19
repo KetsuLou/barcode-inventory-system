@@ -96,14 +96,15 @@ const BarcodeApiConfigPage: React.FC = () => {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center gap-2">
                 <Settings className="text-blue-600" size={24} />
-                <h1 className="text-xl font-bold text-gray-800">扫码API配置</h1>
+                <h1 className="text-xl font-bold text-gray-800 hidden sm:block">扫码API配置</h1>
+                <h1 className="text-lg font-bold text-gray-800 sm:hidden">API配置</h1>
               </div>
               <button
                 onClick={handleFormCancel}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
               >
                 <ArrowLeft size={20} />
-                返回
+                <span className="hidden sm:inline">返回</span>
               </button>
             </div>
           </div>
@@ -127,24 +128,25 @@ const BarcodeApiConfigPage: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Settings className="text-blue-600" size={24} />
-              <h1 className="text-xl font-bold text-gray-800">扫码API配置</h1>
+              <h1 className="text-xl font-bold text-gray-800 hidden sm:block">扫码API配置</h1>
+              <h1 className="text-lg font-bold text-gray-800 sm:hidden">API配置</h1>
             </div>
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
             >
               <ArrowLeft size={20} />
-              返回首页
+              <span className="hidden sm:inline">返回首页</span>
             </button>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <button
             onClick={handleAdd}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             <Plus size={20} />
             添加配置
@@ -158,8 +160,8 @@ const BarcodeApiConfigPage: React.FC = () => {
             暂无配置，点击上方按钮添加
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <table className="w-full">
+          <div className="bg-white rounded-lg shadow-lg p-6 overflow-x-auto">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">名称</th>
@@ -173,7 +175,7 @@ const BarcodeApiConfigPage: React.FC = () => {
                 {configs.map((config) => (
                   <tr key={config.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium">{config.name}</td>
-                    <td className="py-3 px-4 text-sm font-mono">{config.url}</td>
+                    <td className="py-3 px-4 text-sm font-mono max-w-xs truncate">{config.url}</td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-1 bg-gray-100 rounded text-sm">
                         {config.method}
@@ -218,7 +220,7 @@ const BarcodeApiConfigPage: React.FC = () => {
         {configs.length > 0 && (
           <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-lg font-semibold mb-4">测试配置</h3>
-            <div className="flex gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <select
                 value={selectedConfigId || ''}
                 onChange={(e) => {
@@ -253,7 +255,7 @@ const BarcodeApiConfigPage: React.FC = () => {
                   }
                 }}
                 disabled={testingConfig !== null}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
               >
                 <Play size={20} />
                 测试
@@ -434,7 +436,7 @@ const BarcodeApiConfigForm: React.FC<BarcodeApiConfigFormProps> = ({ config, onS
           </label>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             type="submit"
             disabled={loading}
