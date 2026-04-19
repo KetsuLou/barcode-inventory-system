@@ -5,7 +5,16 @@ import { AuthRequest, CreateProductDto, UpdateProductDto } from '../types';
 export const getAllProducts = (req: AuthRequest, res: Response) => {
   try {
     const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC').all();
-    res.json(products);
+    
+    const productsWithImages = products.map((product: any) => {
+      const remarkImages = db.prepare('SELECT * FROM remark_images WHERE product_id = ? ORDER BY created_at ASC').all(product.id);
+      return {
+        ...product,
+        remark_images: remarkImages
+      };
+    });
+    
+    res.json(productsWithImages);
   } catch (error) {
     console.error('Get products error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -21,7 +30,12 @@ export const getProductByBarcode = (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    res.json(product);
+    const remarkImages = db.prepare('SELECT * FROM remark_images WHERE product_id = ? ORDER BY created_at ASC').all((product as any).id);
+    
+    res.json({
+      ...product,
+      remark_images: remarkImages
+    });
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -30,7 +44,7 @@ export const getProductByBarcode = (req: AuthRequest, res: Response) => {
 
 export const createProduct = (req: AuthRequest, res: Response) => {
   try {
-    const { barcode, name, price, description, quantity, image_url, tags }: CreateProductDto = req.body;
+    const { barcode, name, price, description, quantity, image_url, tags, remark_images }: CreateProductDto = req.body;
 
     if (!barcode || !name) {
       return res.status(400).json({ error: 'Barcode and name are required' });
@@ -43,9 +57,22 @@ export const createProduct = (req: AuthRequest, res: Response) => {
 
     const result = stmt.run(barcode, name, price || null, description || '', quantity || 0, image_url || '', tags || '');
 
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
+    const productId = result.lastInsertRowid as number;
 
-    res.status(201).json(product);
+    if (remark_images && remark_images.length > 0) {
+      const imageStmt = db.prepare('INSERT INTO remark_images (product_id, image_url) VALUES (?, ?)');
+      remark_images.forEach((imageUrl: string) => {
+        imageStmt.run(productId, imageUrl);
+      });
+    }
+
+    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(productId) as any;
+    const remarkImages = db.prepare('SELECT * FROM remark_images WHERE product_id = ? ORDER BY created_at ASC').all(productId);
+
+    res.status(201).json({
+      ...product,
+      remark_images: remarkImages
+    });
   } catch (error: any) {
     if (error.code === 'SQLITE_CONSTRAINT') {
       return res.status(409).json({ error: 'Product with this barcode already exists' });
@@ -58,7 +85,7 @@ export const createProduct = (req: AuthRequest, res: Response) => {
 export const updateProduct = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, price, description, quantity, image_url, tags }: UpdateProductDto = req.body;
+    const { name, price, description, quantity, image_url, tags, remark_images }: UpdateProductDto = req.body;
 
     const existingProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
     if (!existingProduct) {
@@ -93,23 +120,41 @@ export const updateProduct = (req: AuthRequest, res: Response) => {
       values.push(tags);
     }
 
-    if (updates.length === 0) {
+    if (updates.length === 0 && remark_images === undefined) {
       return res.status(400).json({ error: 'No fields to update' });
     }
 
-    updates.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(id);
+    if (updates.length > 0) {
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      values.push(id);
 
-    const stmt = db.prepare(`
-      UPDATE products
-      SET ${updates.join(', ')}
-      WHERE id = ?
-    `);
+      const stmt = db.prepare(`
+        UPDATE products
+        SET ${updates.join(', ')}
+        WHERE id = ?
+      `);
 
-    stmt.run(...values);
+      stmt.run(...values);
+    }
 
-    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-    res.json(product);
+    if (remark_images !== undefined) {
+      db.prepare('DELETE FROM remark_images WHERE product_id = ?').run(id);
+      
+      if (remark_images.length > 0) {
+        const imageStmt = db.prepare('INSERT INTO remark_images (product_id, image_url) VALUES (?, ?)');
+        remark_images.forEach((imageUrl: string) => {
+          imageStmt.run(id, imageUrl);
+        });
+      }
+    }
+
+    const product = db.prepare('SELECT * FROM products WHERE id = ?').get(id) as any;
+    const remarkImages = db.prepare('SELECT * FROM remark_images WHERE product_id = ? ORDER BY created_at ASC').all(id);
+
+    res.json({
+      ...product,
+      remark_images: remarkImages
+    });
   } catch (error) {
     console.error('Update product error:', error);
     res.status(500).json({ error: 'Internal server error' });

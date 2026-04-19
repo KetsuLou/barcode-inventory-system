@@ -19,11 +19,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
     quantity: undefined,
     image_url: '',
     tags: '',
+    remark_images: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [remarkImages, setRemarkImages] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
@@ -37,12 +39,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
         quantity: product.quantity,
         image_url: product.image_url || '',
         tags: product.tags || '',
+        remark_images: product.remark_images?.map(img => img.image_url) || [],
       });
       if (product.image_url) {
         setPreviewImages([product.image_url]);
       }
       if (product.tags) {
         setTags(product.tags.split(',').map(t => t.trim()).filter(t => t));
+      }
+      if (product.remark_images) {
+        setRemarkImages(product.remark_images.map(img => img.image_url));
       }
     } else if (initialBarcode) {
       setFormData(prev => ({ ...prev, barcode: initialBarcode }));
@@ -59,6 +65,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
         ...formData,
         tags: tags.join(','),
         image_url: previewImages.length > 0 ? previewImages[0] : '',
+        remark_images: remarkImages,
       };
       
       if (product) {
@@ -95,6 +102,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
   const handleRemoveImage = (index: number) => {
     const newImages = previewImages.filter((_, i) => i !== index);
     setPreviewImages(newImages);
+  };
+
+  const handleRemarkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await uploadAPI.uploadImage(file);
+      const imageUrl = response.data.imageUrl;
+      setRemarkImages([...remarkImages, imageUrl]);
+    } catch (err: any) {
+      setError(err.response?.data?.error || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveRemarkImage = (index: number) => {
+    const newImages = remarkImages.filter((_, i) => i !== index);
+    setRemarkImages(newImages);
   };
 
   const handleAddTag = () => {
@@ -192,6 +222,51 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, initialBarcode, onSu
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            备注图片
+          </label>
+          {remarkImages.length > 0 ? (
+            <div className="grid grid-cols-4 gap-2 mb-2">
+              {remarkImages.map((imageUrl, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={imageUrl}
+                    alt={`备注图片 ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-md border border-gray-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveRemarkImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+            <input
+              type="file"
+              id="remark-image-upload"
+              accept="image/*"
+              onChange={handleRemarkImageUpload}
+              className="hidden"
+              disabled={uploading}
+            />
+            <label
+              htmlFor="remark-image-upload"
+              className="cursor-pointer flex flex-col items-center"
+            >
+              <Upload size={32} className="text-gray-400 mb-2" />
+              <span className="text-sm text-gray-600">
+                {uploading ? '上传中...' : '点击上传备注图片'}
+              </span>
+            </label>
+          </div>
         </div>
 
         <div>
