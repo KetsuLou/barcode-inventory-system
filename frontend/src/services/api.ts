@@ -34,6 +34,10 @@ export const authAPI = {
     api.post('/auth/login', { username, password }),
   register: (username: string, password: string) =>
     api.post('/auth/register', { username, password }),
+  getUsers: () => api.get('/auth/users'),
+  createUser: (data: any) => api.post('/auth/users', data),
+  deleteUser: (id: number) => api.delete(`/auth/users/${id}`),
+  updatePassword: (data: any) => api.put('/auth/password', data),
 };
 
 export const productAPI = {

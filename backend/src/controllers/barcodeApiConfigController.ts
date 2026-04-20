@@ -4,7 +4,7 @@ import { AuthRequest, CreateBarcodeApiConfigDto, UpdateBarcodeApiConfigDto } fro
 
 export const getAllConfigs = (req: AuthRequest, res: Response) => {
   try {
-    const configs = db.prepare('SELECT * FROM barcode_api_config ORDER BY created_at DESC').all();
+    const configs = db.prepare('SELECT * FROM barcode_api_config WHERE tenant_id = ? ORDER BY created_at DESC').all(req.tenantId);
     res.json(configs);
   } catch (error) {
     console.error('Get configs error:', error);
@@ -14,7 +14,7 @@ export const getAllConfigs = (req: AuthRequest, res: Response) => {
 
 export const getEnabledConfig = (req: AuthRequest, res: Response) => {
   try {
-    const config = db.prepare('SELECT * FROM barcode_api_config WHERE enabled = 1 LIMIT 1').get();
+    const config = db.prepare('SELECT * FROM barcode_api_config WHERE enabled = 1 AND tenant_id = ? LIMIT 1').get(req.tenantId);
     if (!config) {
       return res.status(404).json({ error: 'No enabled config found' });
     }
@@ -28,7 +28,7 @@ export const getEnabledConfig = (req: AuthRequest, res: Response) => {
 export const getConfigById = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const config = db.prepare('SELECT * FROM barcode_api_config WHERE id = ?').get(id);
+    const config = db.prepare('SELECT * FROM barcode_api_config WHERE id = ? AND tenant_id = ?').get(id, req.tenantId);
 
     if (!config) {
       return res.status(404).json({ error: 'Config not found' });
@@ -50,8 +50,8 @@ export const createConfig = (req: AuthRequest, res: Response) => {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO barcode_api_config (name, url, method, headers, params, response_mapping, enabled)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO barcode_api_config (name, url, method, headers, params, response_mapping, enabled, tenant_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -61,7 +61,8 @@ export const createConfig = (req: AuthRequest, res: Response) => {
       headers || '',
       params || '',
       response_mapping || '',
-      enabled !== undefined ? (enabled ? 1 : 0) : 1
+      enabled !== undefined ? (enabled ? 1 : 0) : 1,
+      req.tenantId
     );
 
     const config = db.prepare('SELECT * FROM barcode_api_config WHERE id = ?').get(result.lastInsertRowid);
@@ -78,7 +79,7 @@ export const updateConfig = (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { name, url, method, headers, params, response_mapping, enabled }: UpdateBarcodeApiConfigDto = req.body;
 
-    const existingConfig = db.prepare('SELECT * FROM barcode_api_config WHERE id = ?').get(id);
+    const existingConfig = db.prepare('SELECT * FROM barcode_api_config WHERE id = ? AND tenant_id = ?').get(id, req.tenantId);
     if (!existingConfig) {
       return res.status(404).json({ error: 'Config not found' });
     }
@@ -142,7 +143,7 @@ export const deleteConfig = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    const existingConfig = db.prepare('SELECT * FROM barcode_api_config WHERE id = ?').get(id);
+    const existingConfig = db.prepare('SELECT * FROM barcode_api_config WHERE id = ? AND tenant_id = ?').get(id, req.tenantId);
     if (!existingConfig) {
       return res.status(404).json({ error: 'Config not found' });
     }

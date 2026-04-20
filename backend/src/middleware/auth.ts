@@ -5,6 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 
 export interface AuthRequest extends Request {
   userId?: number;
+  tenantId?: number;
 }
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -17,8 +18,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   const token = authHeader.substring(7);
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; tenantId: number };
     req.userId = decoded.userId;
+    req.tenantId = decoded.tenantId;
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid token' });

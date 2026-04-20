@@ -4,11 +4,13 @@ export interface User {
   id: number;
   username: string;
   password: string;
+  tenant_id: number;
   created_at: string;
 }
 
 export interface AuthRequest extends Request {
   userId?: number;
+  tenantId?: number;
 }
 
 export interface Product {
@@ -20,6 +22,7 @@ export interface Product {
   quantity: number;
   image_url?: string;
   tags?: string;
+  tenant_id: number;
   created_at: string;
   updated_at: string;
   remark_images?: RemarkImage[];
@@ -29,6 +32,7 @@ export interface RemarkImage {
   id: number;
   product_id: number;
   image_url: string;
+  tenant_id: number;
   created_at: string;
 }
 
@@ -63,6 +67,7 @@ export interface AuthResponse {
   user: {
     id: number;
     username: string;
+    tenant_id: number;
   };
 }
 
@@ -75,6 +80,7 @@ export interface BarcodeApiConfig {
   params?: string;
   response_mapping?: string;
   enabled: number;
+  tenant_id: number;
   created_at: string;
   updated_at: string;
 }
@@ -97,4 +103,14 @@ export interface UpdateBarcodeApiConfigDto {
   params?: string;
   response_mapping?: string;
   enabled?: number;
+}
+
+export interface CreateUserDto {
+  username: string;
+  password: string;
+}
+
+export interface UpdatePasswordDto {
+  oldPassword: string;
+  newPassword: string;
 }

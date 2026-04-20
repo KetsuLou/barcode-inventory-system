@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import BarcodeApiConfig from './pages/BarcodeApiConfig';
+import UserManagement from './pages/UserManagement';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +35,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <BarcodeApiConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <UserManagement />
               </ProtectedRoute>
             }
           />

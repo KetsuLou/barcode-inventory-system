@@ -5,7 +5,7 @@ import { Product } from '../types';
 import ProductList from '../components/ProductList';
 import ProductForm from '../components/ProductForm';
 import BarcodeScanner from '../components/BarcodeScanner';
-import { Plus, Scan, LogOut, Package, Settings } from 'lucide-react';
+import { Plus, Scan, LogOut, Package, Settings, Users } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, logout, isAuthenticated, isLoading } = useAuth();
@@ -75,6 +75,13 @@ const Dashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-800">商品库存管理</h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/users')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                title="用户管理"
+              >
+                <Users size={20} />
+              </button>
               <button
                 onClick={() => navigate('/config')}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800"

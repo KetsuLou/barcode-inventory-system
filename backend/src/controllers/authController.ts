@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../database/connection';
-import { LoginDto, AuthResponse } from '../types';
+import { LoginDto, AuthResponse, CreateUserDto, UpdatePasswordDto, AuthRequest } from '../types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -20,13 +20,14 @@ export const login = (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: user.id, tenantId: user.tenant_id }, JWT_SECRET, { expiresIn: '24h' });
 
     const response: AuthResponse = {
       token,
       user: {
         id: user.id,
-        username: user.username
+        username: user.username,
+        tenant_id: user.tenant_id
       }
     };
 
@@ -51,16 +52,17 @@ export const register = (req: Request, res: Response) => {
 
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    const stmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+    const stmt = db.prepare('INSERT INTO users (username, password, tenant_id) VALUES (?, ?, 1)');
     const result = stmt.run(username, hashedPassword);
 
-    const token = jwt.sign({ userId: result.lastInsertRowid }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: result.lastInsertRowid, tenantId: 1 }, JWT_SECRET, { expiresIn: '24h' });
 
     const response: AuthResponse = {
       token,
       user: {
         id: result.lastInsertRowid as number,
-        username
+        username,
+        tenant_id: 1
       }
     };
 
@@ -70,6 +72,100 @@ export const register = (req: Request, res: Response) => {
       return res.status(409).json({ error: 'Username already exists' });
     }
     console.error('Register error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getUsers = (req: AuthRequest, res: Response) => {
+  try {
+    const users = db.prepare('SELECT id, username, tenant_id, created_at FROM users WHERE tenant_id = ?').all(req.tenantId);
+    res.json(users);
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const createUser = (req: AuthRequest, res: Response) => {
+  try {
+    const { username, password }: CreateUserDto = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    const stmt = db.prepare('INSERT INTO users (username, password, tenant_id) VALUES (?, ?, ?)');
+    const result = stmt.run(username, hashedPassword, req.tenantId);
+
+    const user = db.prepare('SELECT id, username, tenant_id, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
+
+    res.status(201).json(user);
+  } catch (error: any) {
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+    console.error('Create user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteUser = (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as any;
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.tenant_id !== req.tenantId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (user.id === req.userId) {
+      return res.status(400).json({ error: 'Cannot delete yourself' });
+    }
+
+    db.prepare('DELETE FROM users WHERE id = ?').run(id);
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updatePassword = (req: AuthRequest, res: Response) => {
+  try {
+    const { oldPassword, newPassword }: UpdatePasswordDto = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Old password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.userId) as any;
+
+    if (!user || !bcrypt.compareSync(oldPassword, user.password)) {
+      return res.status(401).json({ error: 'Invalid old password' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+    db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashedPassword, req.userId);
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Update password error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
