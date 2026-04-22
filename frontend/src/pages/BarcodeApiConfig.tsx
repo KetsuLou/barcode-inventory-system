@@ -403,7 +403,7 @@ const BarcodeApiConfigForm: React.FC<BarcodeApiConfigFormProps> = ({ config, onS
             placeholder='{"apiKey": "your-key"}'
           />
           <p className="text-xs text-gray-500 mt-1">
-            如果URL中包含 {'{barcode}'} 占位符，条形码会自动替换；否则会自动添加到参数中，字段名为 "barcode"
+            可在参数中使用 {'{barcode}'} 占位符，例如：{"barcode": "{'{barcode}'}", "apiKey": "your-key"}
           </p>
         </div>
 
