@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { login, register, getUsers, createUser, deleteUser, updatePassword } from '../controllers/authController';
+import { login, register, getUsers, createUser, deleteUser, updatePassword, updateUser } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -17,6 +17,7 @@ router.post('/register', [
 
 router.get('/users', authenticate, getUsers);
 router.post('/users', authenticate, createUser);
+router.put('/users/:id', authenticate, updateUser);
 router.delete('/users/:id', authenticate, deleteUser);
 router.put('/password', authenticate, updatePassword);
 

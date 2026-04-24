@@ -2,6 +2,7 @@ export interface User {
   id: number;
   username: string;
   tenant_id: number;
+  role: string;
 }
 
 export interface Product {
@@ -91,6 +92,11 @@ export interface UpdateBarcodeApiConfigDto {
 export interface CreateUserDto {
   username: string;
   password: string;
+}
+
+export interface UpdateUserDto {
+  tenant_id?: number;
+  password?: string;
 }
 
 export interface UpdatePasswordDto {

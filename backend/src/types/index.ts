@@ -5,12 +5,14 @@ export interface User {
   username: string;
   password: string;
   tenant_id: number;
+  role: string;
   created_at: string;
 }
 
 export interface AuthRequest extends Request {
   userId?: number;
   tenantId?: number;
+  role?: string;
 }
 
 export interface Product {
@@ -68,6 +70,7 @@ export interface AuthResponse {
     id: number;
     username: string;
     tenant_id: number;
+    role: string;
   };
 }
 
@@ -108,6 +111,11 @@ export interface UpdateBarcodeApiConfigDto {
 export interface CreateUserDto {
   username: string;
   password: string;
+}
+
+export interface UpdateUserDto {
+  tenant_id?: number;
+  password?: string;
 }
 
 export interface UpdatePasswordDto {

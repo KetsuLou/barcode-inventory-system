@@ -357,10 +357,10 @@ const BarcodeApiConfigForm: React.FC<BarcodeApiConfigFormProps> = ({ config, onS
             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
-            placeholder="https://api.example.com/goods/barcode/{'{barcode}'}"
+            placeholder="https://api.example.com/goods/barcode/{{barcode}}"
           />
           <p className="text-xs text-gray-500 mt-1">
-            使用 {'{barcode}'} 作为条形码占位符，例如：https://api.example.com/goods/barcode/{'{barcode}'}
+            使用 &#123;&#123;barcode&#125;&#125; 作为条形码占位符，例如：https://api.example.com/goods/barcode/&#123;&#123;barcode&#125;&#125;
           </p>
         </div>
 
@@ -403,7 +403,7 @@ const BarcodeApiConfigForm: React.FC<BarcodeApiConfigFormProps> = ({ config, onS
             placeholder='{"apiKey": "your-key"}'
           />
           <p className="text-xs text-gray-500 mt-1">
-            可在参数中使用 {'{barcode}'} 占位符，例如：{"barcode": "{'{barcode}'}", "apiKey": "your-key"}
+            可在参数中使用 &#123;&#123;barcode&#125;&#125; 占位符，例如：&#123;"barcode": "&#123;&#123;barcode&#125;&#125;", "apiKey": "your-key"&#125;
           </p>
         </div>
 
