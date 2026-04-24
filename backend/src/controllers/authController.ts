@@ -80,7 +80,12 @@ export const register = (req: Request, res: Response) => {
 
 export const getUsers = (req: AuthRequest, res: Response) => {
   try {
-    const users = db.prepare('SELECT id, username, tenant_id, role, created_at FROM users WHERE tenant_id = ?').all(req.tenantId);
+    let users;
+    if (req.role === 'super_admin') {
+      users = db.prepare('SELECT id, username, tenant_id, role, created_at FROM users').all();
+    } else {
+      users = db.prepare('SELECT id, username, tenant_id, role, created_at FROM users WHERE tenant_id = ?').all(req.tenantId);
+    }
     res.json(users);
   } catch (error) {
     console.error('Get users error:', error);
@@ -90,7 +95,7 @@ export const getUsers = (req: AuthRequest, res: Response) => {
 
 export const createUser = (req: AuthRequest, res: Response) => {
   try {
-    const { username, password }: CreateUserDto = req.body;
+    const { username, password, tenant_id, role }: CreateUserDto & { tenant_id?: number; role?: string } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
@@ -102,8 +107,27 @@ export const createUser = (req: AuthRequest, res: Response) => {
 
     const hashedPassword = bcrypt.hashSync(password, 10);
 
+    let targetTenantId = req.tenantId;
+    let targetRole = 'user';
+
+    if (req.role === 'super_admin') {
+      if (tenant_id !== undefined) {
+        targetTenantId = tenant_id;
+      }
+      if (role !== undefined && ['user', 'admin', 'super_admin'].includes(role)) {
+        targetRole = role;
+      }
+    } else if (req.role === 'admin') {
+      if (tenant_id !== undefined && tenant_id !== req.tenantId) {
+        return res.status(403).json({ error: 'Admin can only create users for their own tenant' });
+      }
+      if (role !== undefined && role !== 'user') {
+        return res.status(403).json({ error: 'Admin can only create regular users' });
+      }
+    }
+
     const stmt = db.prepare('INSERT INTO users (username, password, tenant_id, role) VALUES (?, ?, ?, ?)');
-    const result = stmt.run(username, hashedPassword, req.tenantId, 'user');
+    const result = stmt.run(username, hashedPassword, targetTenantId, targetRole);
 
     const user = db.prepare('SELECT id, username, tenant_id, role, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
 
@@ -126,15 +150,23 @@ export const deleteUser = (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (user.tenant_id !== req.tenantId) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
     if (user.id === req.userId) {
       return res.status(400).json({ error: 'Cannot delete yourself' });
     }
 
-    db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    if (req.role === 'super_admin') {
+      db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    } else if (req.role === 'admin') {
+      if (user.tenant_id !== req.tenantId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (user.role === 'admin') {
+        return res.status(403).json({ error: 'Cannot delete other admin' });
+      }
+      db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    } else {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -175,9 +207,9 @@ export const updatePassword = (req: AuthRequest, res: Response) => {
 export const updateUser = (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { tenant_id, password }: UpdateUserDto = req.body;
+    const { tenant_id, password, role }: UpdateUserDto & { role?: string } = req.body;
 
-    if (req.role !== 'admin') {
+    if (req.role !== 'admin' && req.role !== 'super_admin') {
       return res.status(403).json({ error: 'Only admin can update users' });
     }
 
@@ -186,14 +218,35 @@ export const updateUser = (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (user.role === 'admin' && user.id !== req.userId) {
-      return res.status(403).json({ error: 'Cannot update other admin' });
+    if (user.id === req.userId) {
+      return res.status(400).json({ error: 'Cannot update yourself' });
+    }
+
+    if (req.role === 'admin') {
+      if (user.tenant_id !== req.tenantId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (user.role === 'admin') {
+        return res.status(403).json({ error: 'Cannot update other admin' });
+      }
+      if (role !== undefined && role !== 'user') {
+        return res.status(403).json({ error: 'Admin can only set role to user' });
+      }
+    }
+
+    if (req.role === 'super_admin') {
+      if (user.role === 'super_admin' && user.id !== req.userId) {
+        return res.status(403).json({ error: 'Cannot update other super admin' });
+      }
     }
 
     const updates: string[] = [];
     const values: any[] = [];
 
     if (tenant_id !== undefined) {
+      if (req.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Only super admin can change tenant_id' });
+      }
       updates.push('tenant_id = ?');
       values.push(tenant_id);
     }
@@ -205,6 +258,17 @@ export const updateUser = (req: AuthRequest, res: Response) => {
       const hashedPassword = bcrypt.hashSync(password, 10);
       updates.push('password = ?');
       values.push(hashedPassword);
+    }
+
+    if (role !== undefined) {
+      if (req.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Only super admin can change role' });
+      }
+      if (!['user', 'admin', 'super_admin'].includes(role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+      }
+      updates.push('role = ?');
+      values.push(role);
     }
 
     if (updates.length === 0) {

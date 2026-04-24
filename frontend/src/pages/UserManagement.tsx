@@ -238,7 +238,11 @@ const UserManagementPage: React.FC = () => {
                   <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium">{user.username}</td>
                     <td className="py-3 px-4">
-                      {user.role === 'admin' ? (
+                      {user.role === 'super_admin' ? (
+                        <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-sm">
+                          超级管理员
+                        </span>
+                      ) : user.role === 'admin' ? (
                         <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
                           管理员
                         </span>
@@ -251,7 +255,7 @@ const UserManagementPage: React.FC = () => {
                     <td className="py-3 px-4">{user.tenant_id}</td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
-                        {currentUser?.role === 'admin' && user.id !== currentUser.id && (
+                        {(currentUser?.role === 'super_admin' || currentUser?.role === 'admin') && user.id !== currentUser.id && (
                           <>
                             <button
                               onClick={() => handleEdit(user)}
@@ -288,7 +292,8 @@ interface UserFormProps {
 }
 
 const UserForm: React.FC<UserFormProps> = ({ onSuccess, onCancel }) => {
-  const [formData, setFormData] = useState<CreateUserDto>({
+  const { user: currentUser } = useAuth();
+  const [formData, setFormData] = useState<CreateUserDto & { tenant_id?: number; role?: string }>({
     username: '',
     password: '',
   });
@@ -348,6 +353,37 @@ const UserForm: React.FC<UserFormProps> = ({ onSuccess, onCancel }) => {
           />
           <p className="text-xs text-gray-500 mt-1">密码至少6个字符</p>
         </div>
+
+        {currentUser?.role === 'super_admin' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                租户ID
+              </label>
+              <input
+                type="number"
+                value={formData.tenant_id || ''}
+                onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                角色
+              </label>
+              <select
+                value={formData.role || 'user'}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
+                <option value="super_admin">超级管理员</option>
+              </select>
+            </div>
+          </>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
@@ -465,9 +501,11 @@ interface EditUserFormProps {
 }
 
 const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSuccess, onCancel }) => {
-  const [formData, setFormData] = useState<UpdateUserDto>({
+  const { user: currentUser } = useAuth();
+  const [formData, setFormData] = useState<UpdateUserDto & { role?: string }>({
     tenant_id: user?.tenant_id,
     password: '',
+    role: user?.role,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -478,7 +516,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSuccess, onCancel }
     setError('');
 
     try {
-      const updateData: UpdateUserDto = {};
+      const updateData: UpdateUserDto & { role?: string } = {};
       
       if (formData.tenant_id !== undefined && formData.tenant_id !== user?.tenant_id) {
         updateData.tenant_id = formData.tenant_id;
@@ -486,6 +524,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSuccess, onCancel }
       
       if (formData.password) {
         updateData.password = formData.password;
+      }
+
+      if (formData.role !== undefined && formData.role !== user?.role) {
+        updateData.role = formData.role;
       }
 
       if (Object.keys(updateData).length === 0) {
@@ -526,17 +568,36 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSuccess, onCancel }
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            租户ID
-          </label>
-          <input
-            type="number"
-            value={formData.tenant_id || ''}
-            onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value ? parseInt(e.target.value) : undefined })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {currentUser?.role === 'super_admin' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                租户ID
+              </label>
+              <input
+                type="number"
+                value={formData.tenant_id || ''}
+                onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                角色
+              </label>
+              <select
+                value={formData.role || 'user'}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
+                <option value="super_admin">超级管理员</option>
+              </select>
+            </div>
+          </>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

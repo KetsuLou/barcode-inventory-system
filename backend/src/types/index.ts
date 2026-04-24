@@ -116,6 +116,7 @@ export interface CreateUserDto {
 export interface UpdateUserDto {
   tenant_id?: number;
   password?: string;
+  role?: string;
 }
 
 export interface UpdatePasswordDto {
