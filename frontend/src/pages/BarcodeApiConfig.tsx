@@ -226,7 +226,6 @@ const BarcodeApiConfigPage: React.FC = () => {
                 onChange={(e) => {
                   const configId = Number(e.target.value);
                   setSelectedConfigId(configId || null);
-                  setTestBarcode('');
                   setTestResult(null);
                   setTestError('');
                 }}
