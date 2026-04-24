@@ -177,6 +177,23 @@ export const testConfig = async (req: AuthRequest, res: Response) => {
     let url = config.url;
     let data = undefined;
 
+    const replaceBarcodeInObject = (obj: any, barcode: string): any => {
+      if (typeof obj === 'string') {
+        return obj.replace(/{barcode}/g, barcode);
+      }
+      if (Array.isArray(obj)) {
+        return obj.map(item => replaceBarcodeInObject(item, barcode));
+      }
+      if (obj && typeof obj === 'object') {
+        const result: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+          result[key] = replaceBarcodeInObject(value, barcode);
+        }
+        return result;
+      }
+      return obj;
+    };
+
     if (url.includes('{barcode}')) {
       url = url.replace('{barcode}', barcode);
       
@@ -187,7 +204,7 @@ export const testConfig = async (req: AuthRequest, res: Response) => {
         }
       } else {
         const params = config.params ? JSON.parse(config.params) : {};
-        data = params;
+        data = replaceBarcodeInObject(params, barcode);
       }
     } else {
       if (config.method === 'GET') {
@@ -196,7 +213,7 @@ export const testConfig = async (req: AuthRequest, res: Response) => {
         url = `${url}?${new URLSearchParams(queryParams).toString()}`;
       } else {
         const params = config.params ? JSON.parse(config.params) : {};
-        data = { ...params, barcode };
+        data = replaceBarcodeInObject(params, barcode);
       }
     }
 
